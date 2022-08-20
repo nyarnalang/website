@@ -1,9 +1,9 @@
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #141814;
-    --bg-acc: #1A221A;
-    --bg-alt: #404540;
-    --bg-alt-acc: #303530;
+    --bg: #1A221A;
+    --bg-acc: #404540;
+    --bg-alt: #2a3228;
+    --bg-alt-acc: #141814;
     --fg: #d5e0d5;
     --shadow: rgba(255, 255, 255, 0.2);
   }
@@ -11,11 +11,11 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg: #d5e0d5;
-    --bg-acc: #d0dad0;
-    --bg-alt: #b7bbb7;
-    --bg-alt-acc: #c7ccc7;
-    --fg: #141814;
+    --bg: #e0eAd5;
+    --bg-acc: #b0c5a8;
+    --bg-alt: #c8d4c0;
+    --bg-alt-acc: #f2f7ec;
+    --fg: #14180A;
     --shadow: rgba(0, 0, 0, 0.2);
   }
 }
@@ -77,12 +77,28 @@ h2 {
   font-size: large;
 }
 
-pre, form {
-  background-color: var(--bg-acc);
+code {
+  font-family: Menlo, Courier, monospace;
+  font-size: medium;
+  background-color: var(--bg-alt);
+  border-radius: 3px;
+  padding: 0.1em 0.3em;
+}
+
+pre {
+  font-family: Menlo, Courier, monospace;
+  background-color: var(--bg-alt-acc);
   padding: 0.75em;
 }
 
+pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
 form {
+  background-color: var(--bg-acc);
+  padding: 0.75em;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -184,7 +200,7 @@ fieldset {
 }
 
 textarea {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: Menlo, Courier, monospace;
   box-sizing: border-box;
   font-size: medium;
   background-color: var(--bg-alt-acc);
@@ -268,7 +284,7 @@ fieldset.interpret {
 }
 
 .interpret label {
-  font-size: small;
+  font-size: medium;
 }
 
 .interpret input[type="text"]::placeholder {
@@ -288,7 +304,7 @@ form button,
   font-weight: bold;
   font-size: large;
   color: white;
-  background-color: cornflowerblue;
+  background-color: rgb(86, 129, 209);
   text-align: center;
   transition: all 0.2s;
   cursor: pointer;
@@ -325,9 +341,8 @@ form button:hover {
 #popup {
   display: none;
   position: absolute;
-  border: 2px solid var(--fg);
   border-radius: 5px;
-  background-color: var(--bg);
+  background-color: var(--bg-acc);
   z-index: 1;
   top: 0;
   left: 0;

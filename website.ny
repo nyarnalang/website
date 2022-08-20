@@ -151,7 +151,7 @@
 
 \TourPage(Basics, permalink=tour/basics/):
   By default, input characters are processed as content.
-  The “\Inline(\#)” character starts a line comment, with all following characters up to and including the following line ending being part of the comment.
+  The “\Inline(\#)” character starts a \Emph(comment), with all following characters up to and including the following line ending being part of the comment.
   If the last non-whitespace character of a comment is another “\Inline(\#)” (i.e. not the initial one), the line ending is excluded from the comment.
 
   A \Emph(command character) introduces non-content structures.
@@ -171,9 +171,9 @@
 
   The \Emph(space) \Inline(U+0020) and \Emph(tabular) \Inline(U+0009) character are \Emph(inline whitespace).
   The \Emph(carriage return) \Inline(U+000D), \Emph(line feed) \Inline(U+000A), or both in sequence, are a \Emph(line ending).
-  A \Emph(line ending) is always processed as if it was a single \Emph(line feed).
+  A line ending is always processed as if it was a single line feed.
 
-  \Emph(Inline whitespace) in front of a \Emph(comment) or a \Emph(line ending) is always ignored.
+  Inline whitespace in front of a comment or a line ending is always ignored.
   This allows you to write end-of-line comments without adding whitespace content to your input, and prevents fully invisible characters to influence your output.
 
   Lines that contain nothing but whitespace are considered \Emph(empty).
@@ -450,7 +450,7 @@
 
   Where \Inline(\\Text) is expected, you can give any scalar value and Nyarna will convert it to text.
 
-  \Pager(/tour/calls/, /tour/structural/)
+  \Pager(/tour/calls/, /tour/declare/)
 
   \Section(Details)
 
@@ -485,6 +485,89 @@
   \end(Interactive)
 \end(TourPage)
 
+\TourPage(Declarations, permalink=tour/declare/):
+  Besides Types, you can also define \Emph(functions) in a \Inline(\\declare) block.
+  \Inline(\\declare) is one of the symbols available in every namespace and will put all symbols into the namespace which has been used to call it.
+  You can give a type as flow argument which then declares symbols in the namespace of that type instead.
+
+  Lexical order of symbol declarations is significant, you cannot refer to a symbol before it is declared.
+  \Inline(\\declare) calls are an exception to that rule, inside declarations you can refer to any symbol declared in the same \Inline(\\declare) call.
+  This allows for circular types and recursive functions.
+
+  Record types declare fields in the same way functions declare parameters.
+  Any parameter configuration on a record type's fields will be used for its constructor signature.
+  A typical configuration is to set the \Inline(primary) parameter, so that it takes the primary block as argument in a call.
+
+  \Pager(/tour/types/, /tour/structural/)
+
+  \Section(Details)
+
+  The primary block of \Inline(\\declare) is for \Emph(public) symbols, which can be imported to other modules.
+  There is a \Inline(private) parameter available for symbols that should not be exported.
+
+  When declaring functions, you can explicitly give a \Inline(return) argument to set their return type, but Nyarna has been designed to infer it.
+  Return types can be inferred even in presence of direct or indirect recursion.
+
+  When declaring function parameters, you can give them default block configurations.
+  The details will be discussed in \Link(/tour/headers/, Headers) and \Link(/tour/swallowing/, Swallowing).
+  These default configurations are what cause \Inline(\\declare) and \Inline(\\func) to use special syntax for symbol and parameter declarations respectively.
+
+  Since functions are first-class values, you can declare anonymous functions with \Inline(\\func) outside of \Inline(\\Declare).
+
+  There is a keyword \Inline(\\builtin) that takes parameters and a return type.
+  This declares a builtin function whose implementation is to be provided by the Nyarna processor.
+  Knowing this, you can read the \Link(https://github.com/nyarnalang/nyarna-zig/blob/master/lib/system.ny, system.ny) file of the standard library.
+  This file is automatically loaded and defines all predefined symbols.
+:right:
+  \Interactive:
+    \Input(input):
+      \declare:
+        fibonacci = \func:
+          index : \Natural
+        :body:
+          \if(\index::lte(1), \index):
+          :else:
+            # recursive call allowed
+            \Natural::add(
+              \fibonacci(\index::sub(1)),
+              \fibonacci(\index::sub(2))
+            )
+          \end(if)
+        \end(func)
+
+        Section = \Record:
+          # type inferred from default value
+          title  = \Text(Unnamed Section)
+          # declare 'content' as primary parameter
+          content: \Text {primary}
+        \end(Record)
+      \end(declare)
+
+      # declare symbols in the namespace of \Section
+      \declare(\Section):
+        render = \func:
+          # not auto 'this' parameter, no OOP.
+          this: \Section
+        :body:
+          === \this::title ===
+          \this::content
+        \end(func)
+      \end(declare)
+
+      \fibonacci(6)
+      \var:
+        sec = \Section:
+          # goes into content
+          Unspecified Content
+        \end(Section)
+      \end(var)
+      # prefix notation possible since 'render' is
+      # in the namespace of the type of \sec
+      \sec::render()
+    \end(Input)
+  \end(Interactive)
+\end(TourPage)
+
 \TourPage(Structural Types, permalink=tour/structural/):
   By mixing text content with commands, we create a \Emph(concatenation).
   By adding empty lines, we create \Emph(paragraphs), which can in turn be concatenations.
@@ -508,7 +591,7 @@
   You may think, if syntactic paragraphs have a \Inline(\\Sequence\(\\Text\)) type, why can we write multiple paragraphs in the input that expects the type \Inline(\\Text)?
   That is because an implicit conversion exists from \Inline(\\Sequence\(\\Text\)) to \Inline(\\Text), which merges the paragraphs with the separators.
 
-  \Pager(/tour/types/, /tour/schemas/)
+  \Pager(/tour/declare/, /tour/schemas/)
 :right:
   \Interactive:
     \Input(input):
@@ -917,7 +1000,7 @@
   The parser has a lookahead that checks for the current identifier inside that structure and will parse it only as block list end if the identifier is the expected one.
   You can change the expected identifier with a “\Inline(\= &lt;identifier&gt;)” in a call's argument list to give you full control of how the block ends.
 
-  \Pager(/tour/calls/, /tour/swallowing/)
+  \Pager(/tour/swallowing/, /tour/captures/)
 :right:
   \Interactive:
     \Input(input):
@@ -964,7 +1047,7 @@
 
   The \Inline(\\for) keyword allows for up to two capture variables in its body, with the first referencing the current item, and the second referencing its index.
 
-  \Pager(/tour/headers/, /tour/altsyntax/)
+  \Pager(/tour/headers/, /tour/evaluation/)
 :right:
   \Interactive:
     \Input(input):
@@ -985,14 +1068,57 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Alternate Syntax, permalink=tour/altsyntax/):
-  This page has not yet been written. Bummer.
+\TourPage(Static and Dynamic Evaluation, permalink=tour/evaluation/):
+  Nyarna's keywords sometimes need to evaluate expressions statically.
+  For example, the \Inline(\\func) keyword needs to evaluate parameter types (but not default values) statically.
+  This is important because it means that you can't use dynamic values, such as variables and parameter values, in certain contexts.
+
+  Whether a certain expression is evaluated statically or dynamically is a local concept and different from the classical difference between compile time and runtime.
+  For example, a function body is a dynamic context, so you can retrieve a parameter's value there.
+  Even if the function is called in a static context, this retrieval is still legal.
+  There is no functionality that is generally not available in any transitively static context.
+
+  Nyarna offers some static introspection keywords in the \Inline(meta) library that is part of the standard library.
+  The example shows that we can, for example, iterate over the declared parameters of a function or Record.
+  This is possible because even parameter declarations are first-class values with the type \Inline(\\Location).
+
+  Like the rest of the standard library, \Inline(meta) is incomplete and currently mostly a proof-of-concept.
 
   \Pager(/tour/captures/)
 :right:
   \Interactive:
     \Input(input):
+      \declare:
+        Something = \Record:
+          a: \Text
+          b: \Integer
+        \end(Record)
+      \end(declare)
 
+      \var:
+        object = \Something(spam, 42)
+      \end(var)
+
+      # provides \params and \access
+      \import(meta)
+
+      # \unroll is a static \for that evaluates the input
+      # statically and instantiates the body for each value.
+      #
+      # the parameter to \params is statically evaluated to
+      # a function signature, which is fine heresince a
+      # record type has a constructor signature.
+      \unroll(\params(\Something), collector=\Concat):|\f|
+        # \access statically evaluates the second parameter
+        # to an identifier and creates an access node to
+        # that field into the given \object (which is not
+        # evaluated statically).
+        #
+        # we can do this because \f::name() can be statically
+        # evaluated, due to our use of \unroll. \f would be
+        # a dynamic variable in a \for loop.
+        field \f::name() has value \access(\object, \f::name())\
+      \end(unroll)
     \end(Input)
   \end(Interactive)
 \end(TourPage)
