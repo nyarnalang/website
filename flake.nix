@@ -24,7 +24,7 @@
       installPhase = ''
         mkdir -p $out
         mv build $out/www
-        cp -t $out/www --no-preserve='ownership' style.css tour.js
+        cp -t $out/www --no-preserve='ownership' -r *.css font tour.js
         cp -t $out/www --no-preserve='ownership' ${wasm}/www/*
       '';
     };

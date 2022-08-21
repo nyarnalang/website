@@ -142,11 +142,73 @@
   Since there currently is no proper language specification, the tour will contain \Emph(Details) sections with more extensive information on the currently discussed features.
   You may skip these if you just want to have a quick impression on the language.
 
-  \Pager(nextLink=/tour/basics/)
+  \Pager(nextLink=/tour/overview/)
 :right:
   \Interactive(who):
     \Input(input, \example)
   \end(Interactive)
+\end(TourPage)
+
+\TourPage(Overview, permalink=tour/overview/):
+  Before we start discussing Nyarna's syntax and semantics, let's get the big picture.
+  Nyarna can probably best be described as a \Emph(markup language)\:
+  It enables you to enter structured data with a syntax tailored to use cases similar to those of LaTeX.
+
+  What makes Nyarna's approach different is that it is not designed around a limited set of output formats.
+  Instead, it allows you to write any number of transformations that generate different outputs for a given input structure.
+  One goal of this approach is to be able build upon existing technologies like LaTeX, HTML and so on, instead of starting a separate ecosystem which would never be able to compete.
+
+  The diagram on the right shows the general flow of processing an input \Emph(module).
+  The given input module may import other modules, and may define parameters for which \Emph(arguments) must be supplied by the caller.
+
+  The evaluation of the modules and arguments creates an initial \Emph(document) with a \Emph(schema) and an empty \Emph(name).
+  The schema defines how the content of the document is structured and how it can be processed.
+  This sets Nyarna apart from languages like XML or JSON which also provide ways to define schemas:
+  In Nyarna, the schema not only defines how the input is structured, but also implements its processing.
+
+  A \Emph(backend) of a schema describes how one or multiple named documents can be generated from a document having this schema.
+  After creating the inital document, the Nyarna processor will apply the selected schema backend, creating additional documents.
+
+  The final result of processing is a set of \Emph(output documents).
+  These will then be returned to the caller.
+  Output documents contain text, typically using some foreign syntax like LaTeX or HTML.
+  Text-only output is required by the command line interface, which writes each output document to a file.
+  If you use Nyarna's API from an application, you can also get output documents with a more complex structure.
+  You can use this for example to input configuration.
+
+  You can have multiple output documents so that you can for example output several HTML files that make up a website, or a collection of LaTeX and BibTeX sources that can be compiled into a PDF file with the respective tools.
+  Nyarna conforms to the Unix philosophy of \Emph(do one thing and do it well) in that it doesn't care what happens with the outputs.
+  You are supposed to use existing tools, such as shell scripts or a Makefile, to facilitate downstream processing.
+
+  Unless the input sets a schema, the initial document will have the \Emph(output schema) which defines its content to be text, and has no backend.
+  This will make the initial document the sole output document without further processing.
+  The majority of examples we'll see in this tour make use of this to show you Nyarna's features in a minimalist pipeline.
+  Since the initial document's name is empty, it would be written to standard output if produced on the command line.
+
+  The value Nyarna hopes to provide is modularity, flexibility, and usability:
+  You can write a schema once and use it to input and process any number of documents.
+  If you already have a number of documents with a certain schema and need the contained data in a new format, you can easily extend the existing schema with a new backend, without altering the documents.
+  Finally, the syntax of Nyarna has been designed for easy error discovery via a static type system and less arbitraryness compared to LaTeX, while still providing a similar feature set.
+
+  And with that, let's dive into Nyarna's syntax.
+
+  \Pager(/tour/, /tour/basics/)
+:right:
+  \Svg(470, 700, Processing a Nyarna input module):
+    \Rect(170, 5, input module)#
+    \MultiRect(5, 50, arguments)#
+    \MultiRect(325, 50, imported, modules)#
+    \Arrow(M 230 85 v 63)#
+    \Arrow(M 65 130 v 55 h 128)#
+    \Arrow(M 385 130 v 55 h -118)#
+    \Circ(230, 185, 30, eval)#
+    \Arrow(M 230 215 v 38)#
+    \Rect(170, 260, initial, document)#
+    \Arrow(M 230 340 v 38)#
+    \Circ(230, 425, 40, process)#
+    \Arrow(M 230 465 v 38)#
+    \MultiRect(170, 530, output, documents)#
+  \end(Svg)
 \end(TourPage)
 
 \TourPage(Basics, permalink=tour/basics/):
@@ -162,7 +224,7 @@
   If a paragraph does not produce any output, it will be removed after evaluation.
   You can use paragraphs to cleanly separate code like declarations or assignments from code that produces output.
 
-  \Pager(/tour/, /tour/commands/)
+  \Pager(/tour/overview/, /tour/commands/)
 
   \Section(Details)
 

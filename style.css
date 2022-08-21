@@ -65,7 +65,7 @@ header {
 header h1 {
   font-size: x-large;
   margin: 0;
-  padding: 0.75em;
+  padding: 0.5em;
 }
 
 main {
@@ -96,7 +96,7 @@ pre code {
   padding: 0;
 }
 
-form {
+form, figure {
   background-color: var(--bg-acc);
   padding: 0.75em;
   height: 100%;
@@ -104,6 +104,35 @@ form {
   flex-direction: column;
   align-items: stretch;
   box-sizing: border-box;
+  margin: 0;
+}
+
+figure {
+  justify-content: space-around;
+  align-items: center;
+}
+
+figcaption {
+  flex: 0;
+}
+
+svg rect, svg circle {
+  stroke: var(--fg);
+  stroke-width: 2;
+  fill: var(--bg);
+}
+
+svg text {
+  fill: var(--fg);
+}
+
+svg path {
+  stroke: var(--fg);
+  stroke-width: 2;
+}
+
+svg marker path {
+  fill: var(--fg);
 }
 
 form > .mods {
@@ -164,23 +193,37 @@ body.split > .left main {
 }
 
 .links {
-  display: none;
-  margin-top: -.5em;
+  margin-top: -.25em;
+  margin-bottom: .5em;
   padding-left: .5em;
   padding-right: .5em;
+  list-style-type: none;
 }
 
-header:hover > .links {
-  display: block;
+.links li {
+  display: inline-block;
+  padding: 0;
+  margin-right: .2em;
 }
 
 .links a {
+  display: inline-block;
   font-size: smaller;
-  padding-right: .2em;
+  padding: 0 .3em;
+  margin: 0;
   text-decoration: none !important;
+  border-radius: .2em;
 }
 
-.links a + a::before {
+.links a:hover, .links a:active {
+  background-color: var(--bg-alt-acc);
+}
+
+.links > li.current > a {
+  background-color: var(--bg-acc) !important;
+}
+
+.links li + li::before {
   content: "•";
   padding-right: .2em;
   font-size: smaller;

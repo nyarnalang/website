@@ -10,20 +10,20 @@
     title    : \Text
     main     = \Bool(false)
     permalink: \Text
-    content  : \Sequence(\Section, \Split, \Code, \Interactive, \Pager, auto=\Para) {primary}:1>
+    content  : \Sequence(\Section, \Split, \Code, \Interactive, \Pager, \Svg, auto=\Para) {primary}:1>
   \end(Record)
 
   TourPage = \Record:
     title    : \Text
     permalink: \Text
-    left     : \Sequence(\Section, \Code, \Interactive, \Pager, auto=\Para) {primary}
-    right    : \Sequence(\Section, \Code, \Interactive, \Pager, auto=\Para)
+    left     : \Sequence(\Section, \Code, \Interactive, \Pager, \Svg, auto=\Para) {primary}
+    right    : \Sequence(\Section, \Code, \Interactive, \Pager, \Svg, auto=\Para)
   \end(Record)
 
   Section = \Record:
     title  : \Text
     id     : \Optional(\Text)
-    content: \Sequence(\Code, \Pager, auto=\Para) {primary}:2>
+    content: \Sequence(\Code, \Pager, \Svg, auto=\Para) {primary}:2>
   \end(Record)
 
   Para = \Record:
@@ -46,7 +46,7 @@
     content: \Concat(\StyledText) {primary}
   \end(Record)
 
-  SplitContent = \Sequence(\Section, \Code, \Interactive, \Pager, auto=\Para)
+  SplitContent = \Sequence(\Section, \Code, \Interactive, \Pager, \Svg, auto=\Para)
 
   Split = \Record:
     left : \SplitContent {primary}
@@ -71,6 +71,28 @@
     prevLink: \Optional(\Text)
     nextLink: \Optional(\Text)
   \end(Record)
+
+  SvgContent = \Intersection(\Rect, \MultiRect, \Circ, \Arrow)
+
+  Svg = \Record:
+    width, height: \Natural
+    caption: \Text
+    content: \Concat(\SvgContent) {primary}
+  \end(Record)
+
+  Rect, MultiRect = \Record:
+    x, y: \Integer
+    content: \List(\Text) {varargs}
+  \end(Record)
+
+  Circ = \Record:
+    x, y, r: \Integer
+    content: \List(\Text) {varargs}
+  \end(Record)
+
+  Arrow = \Record:
+    path: \Text {primary}
+  \end(Record)
 :backends:|\doc|
   html = \backend:
   :funcs:
@@ -89,6 +111,7 @@
           <title>\if(\main,,\doc::root::title | \ )\title</title>
           <meta charset="UTF-8">
           <link rel="stylesheet" href="/style.css">
+          <link rel="stylesheet" href="/icons.css">
           \if(\script):
             <script type="module" src="/tour.js"></script>
           \end(if)
@@ -110,20 +133,53 @@
         <a href="/">nyarna</a>
         <a href="/tour/">Tour</a>
         <a href="/about/">About</a>
-        <a href="https://github.com/nyarnalang">GitHub</a>
+        <a href="https://github.com/nyarnalang"><i class="icon-github-circled"></i> GitHub</a>
       </nav>
       <header>
         <h1>\title</h1>
         \if(\links):|\l|
-          <div class="links">\l</div>
+          <ul class="links">\l</ul>
         \end(if)
       </header>
     \end(func)
 
-    linker = \matcher:
-    :(\Page):
-    :(\TourPage):|\tp|
-      <a href="/\tp::permalink">\tp::title</a>
+    multilineText = \func:
+      x, y: \Integer
+      lines: \List(\Text)
+    :body:
+      \for(\lines, collector=\Concat):|\line, \i|
+        <text text-anchor="middle" x="\x"#
+          y="\y::add(5, \Integer::sub(\i, 1)::mult(20))::sub(\Integer::mult(\lines::len()::sub(1), 10))"#
+          >\line</text>\
+      \end(for)
+    \end(func)
+
+    render = \matcher:
+    :(\Svg):|\svg|
+      <figure>
+      <svg width="\svg::width" height="\svg::height">
+      <defs>
+      <marker id="head" orient="auto" markerWidth="3" markerHeight="4" refX="0.1" refY="2">
+      <path d="M 0 0 V 4 L 2 2 Z" />
+      </marker>
+      </defs>
+      \map(\svg::content, \render, collector=\Concat)
+      </svg>
+      <figcaption>\svg::caption</figcaption>
+      </figure>
+    :(\Rect):|\r|
+      <rect x="\r::x" y="\r::y" width="120" height="80" />
+      \multilineText(\r::x::add(60), \r::y::add(40), \r::content)
+    :(\MultiRect):|\mr|
+      <rect x="\mr::x::add(20)" y="\mr::y::sub(20)" width="120" height="80" />
+      <rect x="\mr::x::add(10)" y="\mr::y::sub(10)" width="120" height="80" />
+      <rect x="\mr::x" y="\mr::y" width="120" height="80" />
+      \multilineText(\mr::x::add(60), \mr::y::add(40), \mr::content)
+    :(\Circ):|\c|
+      <circle cx="\c::x" cy="\c::y" r="\c::r" />
+      \multilineText(\c::x, \c::y, \c::content)
+    :(\Arrow):|\a|
+      <path marker-end="url(\#head)" fill="none" d="\a::path" />\
     \end(matcher)
 
     page = \matcher:
@@ -138,7 +194,13 @@
       \buildPage(Tour: \s::title, \s::permalink, bclass=split, script=true):
         <div class="left">
           \header(Tour: \s::title):
-            \map(\doc::root::pages, \linker, collector=\Concat)
+            \for(\doc::root::pages, collector=\Concat):|\p|
+              \match(\p):
+              :(\Page):
+              :(\TourPage):|\tp|
+                <li\if(\tp::permalink::eq(\s::permalink), \ class\="current")><a href="/\tp::permalink">\tp::title</a></li>
+              \end(match)
+            \end(for)
           \end(header)
           <main>
             \map(\s::left, \blocks, collector=\Concat)
@@ -205,18 +267,20 @@
               \end(for)
             </div>
           \end(if)
-          <button type="submit">Interpret</button>
+          <button type="submit"><i class="icon-cog-alt"></i> Interpret</button>
         </fieldset>
       </form>
     :(\Pager):|\p|
       <div class="pager">
         \if(\p::prevLink):|\l|
-          <a href="\l" class="prev">Previous</a>
+          <a href="\l" class="prev"><i class="icon-angle-left"></i> Previous</a>
         \end(if)
         \if(\p::nextLink):|\l|
-          <a href="\l" class="next">Next</a>
+          <a href="\l" class="next">Next <i class="icon-angle-right"></i></a>
         \end(if)
       </div>
+    :(\Svg):|\svg|
+      \render(\svg)
     \end(matcher)
 
     styled = \matcher:
