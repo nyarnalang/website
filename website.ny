@@ -195,19 +195,19 @@
   \Pager(/tour/, /tour/basics/)
 :right:
   \Svg(470, 700, Processing a Nyarna input module):
-    \Rect(170, 5, input module)#
-    \MultiRect(5, 50, arguments)#
-    \MultiRect(325, 50, imported, modules)#
-    \Arrow(M 230 85 v 63)#
-    \Arrow(M 65 130 v 55 h 128)#
-    \Arrow(M 385 130 v 55 h -118)#
-    \Circ(230, 185, 30, eval)#
-    \Arrow(M 230 215 v 38)#
-    \Rect(170, 260, initial, document)#
-    \Arrow(M 230 340 v 38)#
-    \Circ(230, 425, 40, process)#
-    \Arrow(M 230 465 v 38)#
-    \MultiRect(170, 530, output, documents)#
+    \Rect(170, 5, input module)
+    \MultiRect(5, 50, arguments)
+    \MultiRect(325, 50, imported, modules)
+    \Arrow(M 230 85 v 63)
+    \Arrow(M 65 130 v 55 h 128)
+    \Arrow(M 385 130 v 55 h -118)
+    \Circ(230, 185, 30, eval)
+    \Arrow(M 230 215 v 38)
+    \Rect(170, 260, initial, document)
+    \Arrow(M 230 340 v 38)
+    \Circ(230, 425, 40, process)
+    \Arrow(M 230 465 v 38)
+    \MultiRect(170, 530, output, documents)
   \end(Svg)
 \end(TourPage)
 
@@ -748,7 +748,7 @@
 
         It also contains multiple \Bold(paragraphs).
       \end(Section)
-    \end(Input)#
+    \end(Input)
     \Input(Section):
       \standalone(schema=\import(Schema))
 
@@ -827,7 +827,7 @@
 
         We can now use \Emph(italic) text!
       \end(Section)
-    \end(Input)#
+    \end(Input)
     \Input(Section):
       \standalone(schema=\import(Schema))
 
@@ -863,7 +863,7 @@
           \end(Output)
         \end(backend)
       \end(SchemaDef)
-    \end(Input)#
+    \end(Input)
     \Input(Emph):
       \fragment(\SchemaExt)
 
@@ -984,7 +984,7 @@
       \Section(At Sea)
 
       They drown. Bummer.
-    \end(Input)#
+    \end(Input)
     \Input(Book):
       \standalone(schema=\import(Schema))
 

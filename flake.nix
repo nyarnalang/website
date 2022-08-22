@@ -13,10 +13,7 @@
     defaultPackage = pkgs.stdenvNoCC.mkDerivation {
       pname   = "nyarna-website";
       version = "0.1.0";
-      src = filter.lib.filter {
-        root = ./.;
-        exclude = [ ./flake.nix ./flake.lock ];
-      };
+      src = self; # cannot use filter due to strange error
       buildPhase = ''
         mkdir build
         ${cli}/bin/nyarna -o build website.ny
