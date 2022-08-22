@@ -106,9 +106,9 @@
     It is in no way stable and may crash on invalid and even valid input.
 
     The standard library is almost non-existing and a lot of simple functionality is missing.
-    The current release is to be seen in the spirit of \Emph(release early\, release often).
+    There is no proper release yet, partly because development follows Zig's master branch and the implementation's code doesn't build with a released Zig version.
+    The interactive interface in the tour is currently the best way to try out the language.
   :right:
-
   \end(Split)
 \end(Page)
 
