@@ -106,7 +106,7 @@
     It is in no way stable and may crash on invalid and even valid input.
 
     The standard library is almost non-existing and a lot of simple functionality is missing.
-    There is no proper release yet, partly because development follows Zig's master branch and the implementation's code doesn't build with a released Zig version.
+    There is no proper release yet, partly because development follows Zig's master branch and the implementation's code doesn't build with any released Zig version.
     The interactive interface in the tour is currently the best way to try out the language.
   :right:
   \end(Split)
@@ -454,7 +454,7 @@
         \end(Record)
       \end(declare)
 
-      # var as another keyword that injects custom syntax
+      # var is another keyword that injects custom syntax
       \var:
         # we call the record type we created above
         # to create a record value
@@ -520,9 +520,9 @@
   Each symbol, parameter and variable has a type that can't be changed dynamically.
 
   Nyarna's types form a hierarchy called a \Emph(lattice).
-  This means that if \Emph(a &lt; b) for two types \Emph(a) and \Emph(b), you can use expressions of type \Emph(a) everywhere expressions of type \Emph(b) are expected.
+  This means that if \Emph(a ≤ b) for two types \Emph(a) and \Emph(b), you can use expressions of type \Emph(a) everywhere expressions of type \Emph(b) are expected.
 
-  For any type \Emph(a) that is either textual, numeric, or an enumeration, \Emph(a &lt;\= \Inline(\\Text)) is true.
+  For any type \Emph(a) that is either textual, numeric, or an enumeration, \Emph(a ≤ \Inline(\\Text)) is true.
 :right:
   \Interactive:
     \Input(input):
@@ -654,6 +654,22 @@
   That is because an implicit conversion exists from \Inline(\\Sequence\(\\Text\)) to \Inline(\\Text), which merges the paragraphs with the separators.
 
   \Pager(/tour/declare/, /tour/schemas/)
+
+  \Section(Details)
+
+  When two expressions are both contributing to an inferred type, for example by being part of the same concatenation, or by being the \Inline(then) and \Inline(else) branch of an \Inline(\\if) expression, their types get \Emph(intersected) to calculate the return type.
+  Intersection is an operation on two types \Emph(a) and \Emph(b) whose result is \Emph(c) with \Emph(a ≤ c ∧ b ≤ c).
+
+  An \Inline(\\Intersection) type contains at least two types of which at most one may be a scalar type, the others must be record types.
+  It is the result of intersecting its contained types.
+  The semantics of an expression having an intersection type is that it may evaluate to a value of either of the contained types.
+
+  If you have an expression that has an intersection type, you can use \Inline(\\match) or \Inline(\\matcher) to branch on its actual type at runtime.
+  We will see an example of this shortly.
+
+  Intersections between \Inline(\\Void) (a type usually created by missing expressions, such as a missing \Inline(else) branch) and another type will create an \Inline(\\Optional) type whose inner type is the non-void type.
+  An expression of \Inline(\\Optional) type will contribute its inner type to the calculated type of a concatenation a paragraphs expression.
+  For example, a concatenation of \Inline(\\Bold) and \Inline(\\Optional\(\\Text\)) will have the type \Inline(\\Concat\(\\Intersection\(\\Bold\, \\Text\)\)).
 :right:
   \Interactive:
     \Input(input):
@@ -938,10 +954,6 @@
   You can define a call parameter to be \Emph(auto-swallowing).
   When you then call the entity with that parameter without an argument for that parameter, and without a block list, the following content will automatically be swallowed.
 
-  \Emph(This concludes the tour).
-  The few pages that follow detail some syntax that hasn't be described yet.
-
-
   \Pager(/tour/parameters/, /tour/headers/)
 :right:
   \Interactive:
@@ -1109,7 +1121,7 @@
 
   The \Inline(\\for) keyword allows for up to two capture variables in its body, with the first referencing the current item, and the second referencing its index.
 
-  \Pager(/tour/headers/, /tour/evaluation/)
+  \Pager(/tour/headers/, /tour/conversions/)
 :right:
   \Interactive:
     \Input(input):
@@ -1130,6 +1142,84 @@
   \end(Interactive)
 \end(TourPage)
 
+\TourPage(Conversions, permalink=tour/conversions/):
+  Text input in Nyarna is of one of two types, \Inline(Literal) or \Inline(Space).
+  These types are internal and cannot be referenced in user code.
+
+  Usually, text input is statically converted into the required scalar type.
+  For example, “\Inline(false)” in an \Inline(\\if) expression is immediately converted to \Inline(\\Bool).
+
+  However, the target type is not always available.
+  For example, text can be in the body of a function, whose return type is inferred by Nyarna.
+  In such cases, the return type of the function will use these internal types and conversion will happen at runtime, when the function is called.
+
+  \Inline(Space) is the type of textual content consisting of only whitespace.
+  \Inline(Literal) is used for all other textual content.
+
+  The significance of \Inline(Space) is that it can be converted away implicitly when part of a concatenation.
+  The example shows how two record instances are created in the function \Inline(things).
+  They are separated by a newline, which is textual content and has the type \Inline(\\Space).
+
+  If this is used in a context where textual content is not allowed, Nyarna will convert the space content away implicitly.
+  This allows you to use whitespace for nice formatting in places where only record values are expected.
+
+  If, however, the same content is used in a place where textual content \Emph(is) allowed, the newline becomes \Inline(\\Text).
+  The example shows this happening by assigning the function's return value to two variables where one allows \Inline(\\Text) while the other doesn't.
+  The second assignment will create an implicit conversion that strips away the whitespace.
+  Try it out!
+
+  \Pager(/tour/captures/, /tour/evaluation/)
+
+  \Section(Details)
+
+  As discussed previously, an expression of type \Emph(a) can be used in a context where type \Emph(b) is expected if \Emph(a ≤ b).
+  If this relation does not exist for \Emph(a) and \Emph(b), Nyarna may create an implicit conversion which replaces the original expression and has type \Emph(c) where \Emph(c ≤ b).
+
+  Such conversions exist for removing \Inline(\\Space), but also for transforming a \Inline(\\Sequence) expression into \Inline(\\Concat).
+  If a \Inline(\\Sequence) is converted into a \Inline(\\Concat), the separators (empty lines) are inserted into the content as \Inline(\\Space).
+  These can then be stripped away if necessary.
+:right:
+  \Interactive:
+    \Input(input):
+      \declare:
+        One = \Record:
+          content: \Text
+        \end(Record)
+
+        Two = \Record:
+          content: \Text
+        \end(Record)
+
+        things = \func:
+        :body:
+          \One(one)
+          \Two(two)
+        \end(func)
+
+        render = \matcher:
+        :(\Text):|\t|
+          \t
+        :(\One):|\o|
+          One(\o::content)
+        :(\Two):|\t|
+          Two(\t::content)
+        \end(matcher)
+      \end(declare)
+
+      \var:
+        a : \Concat(\Intersection(\One, \Two)) = \things()
+        b : \Concat(\Intersection(\One, \Two, \Text)) = \things()
+      \end(var)
+
+      === Content of a ===
+      \map(\a, \render)
+
+      === Content of b ===
+      \map(\b, \render)
+    \end(Input)
+  \end(Interactive)
+\end(TourPage)
+
 \TourPage(Static and Dynamic Evaluation, permalink=tour/evaluation/):
   Nyarna's keywords sometimes need to evaluate expressions statically.
   For example, the \Inline(\\func) keyword needs to evaluate parameter types (but not default values) statically.
@@ -1146,7 +1236,7 @@
 
   Like the rest of the standard library, \Inline(meta) is incomplete and currently mostly a proof-of-concept.
 
-  \Pager(/tour/captures/)
+  \Pager(/tour/conversions/)
 :right:
   \Interactive:
     \Input(input):
