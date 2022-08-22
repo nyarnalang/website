@@ -52,7 +52,7 @@
     \Section(Designed as Evolution of LaTeX)
 
     Nyarna's syntax and feature set was primarily inspired by \Link(https://www.latex-project.org, LaTeX).
-    Its goal is to be a viable frontend language for LaTeX-based document generation, giving access to the typesetting system's abundant features while being more user-friendly and flexible.
+    The initial idea was to have a language viable to be used as frontend for LaTeX – Nyarna isn't quite there yet – while being more user-friendly and flexible.
     Besides LaTeX, Nyarna also takes ideas from \Link(https://www.w3.org/TR/xslt-30/, XSLT), \Link(https://yaml.org, YAML), \Link(https://nim-lang.org, Nim) and \Link(https://ziglang.org, Zig).
 
     \Section(Structured Input\, Flexible Output)
@@ -76,14 +76,21 @@
     \Section(First-Class Types and Embeddability)
 
     Types are first-class values, as are Schemas.
-    This potentially allows for auto-generation of code translating between input in a given Nyarna Schema and your application's native data types.
+    The ability to inspect types at runtime potentially allows you to autogenerate code from a schema.
+    With this, you could embed Nyarna in your application and deserialize input into native types.
 
-    \Section(User-friendly Learning Curve)
+    \Section(Power Tool with Complexity Layers)
 
-    Minimal knowledge is required to produce simple output.
-    Basic knowledge about command structures already lets a user write input for a given schema.
-    More detailed knowledge about types and functions allows for programmatic construction of the input data.
+    While Nyarna provides a lot of features, it is not necessary to know about them all to use the language.
+    Simple use-cases, like text templating, require only minimal syntax.
+    Writing content for a given schema still doesn't require the more complex features.
+    You will probably not need to know much about the type system before you start writing functions.
     The most complex features are usually only needed for writing Schemas.
+
+    \Section(Available in your Browser)
+
+    Nyarna is nowhere near stable yet, but the implementation is good enough to demonstrate its features.
+    Check out \Link(/tour/, the tour) to try it out!
   :right:
     \Code(\example)
   \end(Split)
@@ -115,7 +122,7 @@
 \TourPage(Introduction, permalink=tour/):
   This tour introduces you to Nyarna's language features.
   On your right you'll find the example code for each step.
-  You can edit and interpret this code in your browser.
+  You can edit and interpret the code in your browser.
   This page shows the example code from the main page.
 
   The interpreter uses Nyarna's reference implementation, compiled to WASM.
