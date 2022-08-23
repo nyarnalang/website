@@ -99,7 +99,7 @@
 \Page(About, permalink=about/):
   \Split:
     Nyarna has been developed as research project at the
-    \Link(https://www.iste.uni-stuttgart.de, Institute of Software Engineerung), University of Stuttgart, Germany.
+    \Link(https://www.iste.uni-stuttgart.de, Institute of Software Engineering), University of Stuttgart, Germany.
 
     The \Link(/tour/, tour) is the current authoritative source for the language syntax and semantics.
     A proper specification has been written during the course of the language's development, but is not up-to-date and would therefore not be of any use.
