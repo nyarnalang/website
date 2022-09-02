@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "ace": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1661932175,
+        "narHash": "sha256-MoKiFrElBWiREIArLQMkHrC5nrV5p/+rhGyFoe9zOkE=",
+        "owner": "ajaxorg",
+        "repo": "ace-builds",
+        "rev": "ed353c1cbe1b39d8acec5030b902b9b2d8c63381",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ajaxorg",
+        "repo": "ace-builds",
+        "type": "github"
+      }
+    },
     "filter": {
       "locked": {
         "lastModified": 1660220294,
@@ -69,6 +85,7 @@
     },
     "root": {
       "inputs": {
+        "ace": "ace",
         "filter": "filter",
         "nyarna-zig": "nyarna-zig",
         "utils": "utils_2"

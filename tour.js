@@ -4,7 +4,7 @@ let interpreter = Nyarna.instantiate("/nyarna.wasm");
 
 function showPopup(success, items) {
   document.getElementById("popup-title").dataset["kind"] = success ? "success" : "failure";
-  const content = document.getElementById("popup-content");
+  const content = document.getElementById("popup-main");
   while (content.firstChild) content.removeChild(content.firstChild);
   const container = document.createElement("div");
   container.classList.add("output-panels");
@@ -36,14 +36,15 @@ window.execNyarna = function(e) {
   interpreter.then((n) => {
     const input = new Input(n);
     const form = e.target;
-    const modules = form.querySelectorAll("textarea");
-    for (const module of modules) {
-      input.pushInput(module.name, module.value);
+    let mainName = false;
+    for (const [name, editor] of Object.entries(window.inputs)) {
+      input.pushInput(name, editor.getValue());
+      if (!mainName) mainName = name;
     }
     for (const ip of form.querySelectorAll(".interpret .arg > input")) {
       input.pushArg(ip.name, ip.value);
     }
-    const result = input.process(modules[0].name);
+    const result = input.process(mainName);
     if (result.errors) {
       showPopup(false, [{name: "errors", content: result.errors}]);
     } else {
@@ -51,3 +52,13 @@ window.execNyarna = function(e) {
     }
   });
 }
+
+function setEditorTheme(dark) {
+  window.editor.setTheme(dark ? "ace/theme/monokai" : "ace/theme/kuroir");
+}
+
+const dark = window.matchMedia('(prefers-color-scheme: dark)');
+dark.addEventListener('change', event => {
+  setEditorTheme(event.matches);
+});
+setEditorTheme(dark.matches);

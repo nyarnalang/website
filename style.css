@@ -274,18 +274,16 @@ textarea {
   resize: none;
 }
 
-.mods textarea {
-  display: none;
-  width: 100%;
+#editor {
   height: 100%;
 }
 
-.mods > input[type="radio"], #popup-shown, #popup-content > input[type="radio"] {
+.mods > input[type="radio"], #popup-shown, #popup-main > input[type="radio"] {
   position: absolute;
   left: -200vw;
 }
 
-.mods > label, #popup-content > label {
+.mods > label, #popup-main > label {
   display: inline-block;
   border-top-left-radius: 0.25em;
   border-top-right-radius: 0.25em;
@@ -296,7 +294,7 @@ textarea {
 }
 
 .mods > input:checked + label,
-#popup-content > input:checked + label {
+#popup-main > input:checked + label {
   background-color: var(--bg-alt-acc);
 }
 
@@ -304,17 +302,13 @@ textarea {
   font-weight: bold;
 }
 
-.mods > input:nth-child(1):checked ~ .module-panels > textarea:nth-child(1),
-.mods > input:nth-child(3):checked ~ .module-panels > textarea:nth-child(2),
-.mods > input:nth-child(5):checked ~ .module-panels > textarea:nth-child(3),
-.mods > input:nth-child(7):checked ~ .module-panels > textarea:nth-child(4),
-.mods > input:nth-child(9):checked ~ .module-panels > textarea:nth-child(5),
-#popup-content > input:nth-child(1):checked ~ .output-panels > textarea:nth-child(1),
-#popup-content > input:nth-child(3):checked ~ .output-panels > textarea:nth-child(1),
-#popup-content > input:nth-child(5):checked ~ .output-panels > textarea:nth-child(1),
-#popup-content > input:nth-child(7):checked ~ .output-panels > textarea:nth-child(1),
-#popup-content > input:nth-child(9):checked ~ .output-panels > textarea:nth-child(1) {
+#popup-main > input:nth-child(1):checked ~ .output-panels > textarea:nth-child(1),
+#popup-main > input:nth-child(3):checked ~ .output-panels > textarea:nth-child(1),
+#popup-main > input:nth-child(5):checked ~ .output-panels > textarea:nth-child(1),
+#popup-main > input:nth-child(7):checked ~ .output-panels > textarea:nth-child(1),
+#popup-main > input:nth-child(9):checked ~ .output-panels > textarea:nth-child(1) {
   display: block;
+  height: 100%;
 }
 
 .module-panels {
@@ -405,23 +399,35 @@ form button:hover {
 #popup {
   display: none;
   position: absolute;
-  border-radius: 5px;
-  background-color: var(--bg-acc);
+  background-color: var(--bg);
   z-index: 1;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  width: 80vw;
-  height: 80vh;
-  margin: auto;
-  flex-direction: column;
-  align-items: stretch;
+  width: 50vw;
+  height: 100vh;
+  margin: 0;
   box-sizing: border-box;
 }
 
-#popup-shown:checked ~ #popup {
+#popup-content {
+  border-radius: 5px;
+  background-color: var(--bg-acc);
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: .5em;
+  left: 1em;
+  right: 1em;
+  bottom: .5em;
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+#popup-shown:checked ~ #popup {
+  display: block;
 }
 
 #popup-title {
@@ -449,7 +455,7 @@ form button:hover {
   content: "Success";
 }
 
-#popup-content {
+#popup-main {
   flex: 1;
   padding: .75em;
 }

@@ -133,7 +133,8 @@
           <link rel="stylesheet" href="/style.css">
           <link rel="stylesheet" href="/icons.css">
           \if(\script):
-            <script type="module" src="/tour.js"></script>
+            <script type="module" src="/tour.js" charset="utf-8"></script>
+            <script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>
           \end(if)
         </head>
         <body\if(\bclass):|\c|
@@ -230,9 +231,11 @@
         </div>
         <input type="checkbox" id="popup-shown">
         <div id="popup">
-          <h2 id="popup-title"><span></span></h2>
-          <div id="popup-content"></div>
-          <label for="popup-shown" id="popup-close">Close</label>
+          <div id="popup-content">
+            <h2 id="popup-title"><span></span></h2>
+            <div id="popup-main"></div>
+            <label for="popup-shown" id="popup-close">Close</label>
+          </div>
         </div>
       \end(buildPage)
     \end(matcher)
@@ -267,13 +270,11 @@
       <form onsubmit="execNyarna(event); return false;">
         <fieldset class="mods">
           \for(\i::inputs):|\input, \index|
-            <input type="radio" id="module-\index" name="module-tabs"\if(\index::eq(1), \ checked)>
+            <input type="radio" id="module-\index" name="module-tabs"\if(\index::eq(1), \ checked) value="\input::name">
             <label for="module-\index">\input::name</label>
           \end(for)
           <div class="module-panels">
-            \for(\i::inputs):|\input|
-              <textarea name="\input::name">\input::content</textarea>
-            \end(for)
+            <div id="editor"></div>
           </div>
         </fieldset>
         <fieldset class="interpret">
@@ -289,6 +290,22 @@
           \end(if)
           <button type="submit"><i class="icon-cog-alt"></i> Interpret</button>
         </fieldset>
+        \for(\i::inputs):|\input, \index|
+          <template id="input-\index">\input::content</template>
+        \end(for)
+        <script>
+          window.editor = ace.edit("editor");
+          window.inputs = {};
+          \for(\i::inputs):|\input, \index|
+            window.inputs["\input::name"] = ace.createEditSession(document.getElementById("input-\index").innerHTML);
+            \if(\index::eq(1)):
+              window.editor.setSession(window.inputs["\input::name"]);
+            \end(if)
+            document.getElementById("module-\index").addEventListener("change", function() {
+              window.editor.setSession(window.inputs[this.value]);
+            });
+          \end(for)
+        </script>
       </form>
     :(\Pager):|\p|
       <div class="pager">
