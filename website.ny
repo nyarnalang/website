@@ -92,7 +92,7 @@
     Nyarna is nowhere near stable yet, but the implementation is good enough to demonstrate its features.
     Check out \Link(/tour/, the tour) to try it out!
   :right:
-    \Code(\example)
+    \Code(highlight = true, content = \example)
   \end(Split)
 \end(Page)
 
@@ -142,7 +142,7 @@
   The files are to carry the name shown here with the \Inline(.ny) suffix.
   Assuming you installed Nyarna on your system, you can then interpret the input via
 
-  \Code:
+  \Code(highlight = false):
     nyarna &lt;main-input&gt;.ny [--&lt;param-name&gt; &lt;arg&gt;]...
   \end(Code)
 
@@ -923,7 +923,7 @@
 
   On the command line, you can call the example code like this:
 
-  \Code:
+  \Code(highlight = false):
     nyarna input.ny --txt Text --num 42
   \end(Code)
 

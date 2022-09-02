@@ -5,6 +5,8 @@
     --bg-alt: #2a3228;
     --bg-alt-acc: #141814;
     --fg: #d5e0d5;
+    --fg-inactive: #95a095;
+    --fg-highlight: #80c560;
     --shadow: rgba(255, 255, 255, 0.2);
   }
 }
@@ -16,6 +18,8 @@
     --bg-alt: #c8d4c0;
     --bg-alt-acc: #f2f7ec;
     --fg: #14180A;
+    --fg-inactive: #757875;
+    --fg-highlight: #407820;
     --shadow: rgba(0, 0, 0, 0.2);
   }
 }
@@ -94,6 +98,23 @@ pre {
 pre code {
   background-color: transparent;
   padding: 0;
+}
+
+code .comment {
+  color: var(--fg-inactive);
+}
+
+code .tag {
+  font-style: italic;
+}
+
+code .keyword, code .special {
+  font-weight: bold;
+  color: var(--fg-highlight);
+}
+
+code .symref, code .escape {
+  color: var(--fg-highlight);
 }
 
 form, figure {
@@ -331,7 +352,7 @@ fieldset.interpret {
 }
 
 .interpret input[type="text"]::placeholder {
-  color: var(--bg-acc);
+  color: var(--fg-inactive);
   opacity: 1;
 }
 

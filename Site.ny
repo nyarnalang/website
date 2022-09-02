@@ -1,5 +1,24 @@
 \standalone(schema=\import(Schema))
 
+\declare:
+  highlight = \highlighter(nyarna):
+  :text:|\t|
+    \t
+  :comment:|\c|
+    <span class="comment">\c</span>
+  :escape:|\e|
+    <span class="escape">\e</span>
+  :keyword:|\k|
+    <span class="keyword">\k</span>
+  :symref:|\s|
+    <span class="symref">\s</span>
+  :special:|\s|
+    <span class="special">\s</span>
+  :tag:|\t|
+    <span class="tag">\t</span>
+  \end(highlighter)
+\end(declare)
+
 \SchemaDef(root = \Site):
   Site = \Record:
     title: \Text
@@ -54,7 +73,8 @@
   \end(Record)
 
   Code = \Record:
-    content: \Text {primary}:<off>
+    highlight = \Bool(false)
+    content   : \Text {primary}:<off>
   \end(Record)
 
   Interactive = \Record:
@@ -242,7 +262,7 @@
       </div>
       </div>\
     :(\Code):|\c|
-      <pre><code>\c::content</code></pre>\
+      <pre><code>\if(\c::highlight, \highlight(code=\c::content), \c::content)</code></pre>\
     :(\Interactive):|\i|
       <form onsubmit="execNyarna(event); return false;">
         <fieldset class="mods">
