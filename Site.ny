@@ -1,6 +1,7 @@
 \standalone(schema=\import(Schema))
 
 \declare:
+:private:
   highlight = \highlighter(nyarna):
   :text:|\t|
     \t
@@ -17,32 +18,43 @@
   :tag:|\t|
     <span class="tag">\t</span>
   \end(highlighter)
+
+  Links = \Record:
+    prev, next: \Optional(\Text)
+    content   : \Text {primary}
+  \end(Record)
 \end(declare)
 
 \SchemaDef(root = \Site):
   Site = \Record:
     title: \Text
-    pages: \Concat(\Intersection(\Page, \TourPage)) {primary}:>
+    pages: \Concat(\Intersection(\Page, \Paginated)) {primary}:>
   \end(Record)
 
   Page = \Record:
     title    : \Text
     main     = \Bool(false)
     permalink: \Text
-    content  : \Sequence(\Section, \Split, \Code, \Interactive, \Pager, \Svg, auto=\Para) {primary}:1>
+    content  : \Sequence(\Section, \Split, \MaxWidth, \Code, \Interactive, \Svg, auto=\Para) {primary}:1>
   \end(Record)
 
   TourPage = \Record:
     title    : \Text
     permalink: \Text
-    left     : \Sequence(\Section, \Code, \Interactive, \Pager, \Svg, auto=\Para) {primary}
-    right    : \Sequence(\Section, \Code, \Interactive, \Pager, \Svg, auto=\Para)
+    left     : \Sequence(\Section, \Code, \Interactive, \Svg, auto=\Para) {primary}
+    right    : \Sequence(\Section, \Code, \Interactive, \Svg, auto=\Para)
+  \end(Record)
+
+  Paginated = \Record:
+    title  : \Text
+    base   : \Text
+    content: \Concat(\Intersection(\Page, \TourPage)) {primary}
   \end(Record)
 
   Section = \Record:
     title  : \Text
     id     : \Optional(\Text)
-    content: \Sequence(\Code, \Pager, \Svg, auto=\Para) {primary}:2>
+    content: \Sequence(\Code, \Svg, auto=\Para) {primary}:2>
   \end(Record)
 
   Para = \Record:
@@ -65,11 +77,15 @@
     content: \Concat(\StyledText) {primary}
   \end(Record)
 
-  SplitContent = \Sequence(\Section, \Code, \Interactive, \Pager, \Svg, auto=\Para)
+  SplitContent = \Sequence(\Section, \Code, \Interactive, \Svg, auto=\Para)
 
   Split = \Record:
     left : \SplitContent {primary}
     right: \SplitContent
+  \end(Record)
+
+  MaxWidth = \Record:
+    content: \SplitContent {primary}
   \end(Record)
 
   Code = \Record:
@@ -85,11 +101,6 @@
   Input = \Record:
     name   : \Identifier
     content: \Text {primary}:<off>
-  \end(Record)
-
-  Pager = \Record:
-    prevLink: \Optional(\Text)
-    nextLink: \Optional(\Text)
   \end(Record)
 
   SvgContent = \Intersection(\Rect, \MultiRect, \Circ, \Arrow)
@@ -148,10 +159,11 @@
 
     header = \func:
       title: \Text
-      links: \Optional(\Text) {primary}
+      links: \Optional(\Links) {primary}
     :body:
       <nav>
         <a href="/">nyarna</a>
+        <a href="/overview/motivation/">Overview</a>
         <a href="/tour/">Tour</a>
         <a href="/about/">About</a>
         <a href="https://github.com/nyarnalang"><i class="icon-github-circled"></i> GitHub</a>
@@ -159,7 +171,23 @@
       <header>
         <h1>\title</h1>
         \if(\links):|\l|
-          <ul class="links">\l</ul>
+          <div class="subheader">
+          <div class="sub-left">
+          <a href="\if(\l::prev):|\link|
+            /\link" class="pagenav"><i class="icon-angle-left"></i></a>
+          :else:
+            \#" class="pagenav hidden"><i class="icon-angle-left"></i></a>
+          \end(if)
+          </div>
+          <ul class="links">\l::content</ul>
+          <div class="sub-right">
+          <a href="\if(\l::next):|\link|
+            /\link" class="pagenav"><i class="icon-angle-right"></i></a>
+          :else:
+            \#" class="pagenav hidden"><i class="icon-angle-right"></i></a>
+          \end(if)
+          </div>
+          </div>
         \end(if)
       </header>
     \end(func)
@@ -203,6 +231,20 @@
       <path marker-end="url(\#head)" fill="none" d="\a::path" />\
     \end(matcher)
 
+    ppermalink = \matcher:
+    :(\Page):|\p|
+      \p::permalink
+    :(\TourPage):|\tp|
+      \tp::permalink
+    \end(matcher)
+
+    ptitle = \matcher:
+    :(\Page):|\p|
+      \p::title
+    :(\TourPage):|\tp|
+      \tp::title
+    \end(matcher)
+
     page = \matcher:
     :(\Page):|\p|
       \buildPage(\p::title, \p::permalink, \p::main):
@@ -211,33 +253,98 @@
           \map(\p::content, \blocks, collector=\Concat)
         </main>
       \end(buildPage)
-    :(\TourPage):|\s|
-      \buildPage(Tour: \s::title, \s::permalink, bclass=split, script=true):
-        <div class="left">
-          \header(Tour: \s::title):
-            \for(\doc::root::pages, collector=\Concat):|\p|
-              \match(\p):
-              :(\Page):
-              :(\TourPage):|\tp|
-                <li\if(\tp::permalink::eq(\s::permalink), \ class\="current")><a href="/\tp::permalink">\tp::title</a></li>
-              \end(match)
+    :(\Paginated):|\pagi|
+      \for(\pagi::content, collector=\Concat):|\item, \index|
+        \var:
+          prev: \Optional(\Text) = \if(\index::gt(1), \pagi::base\ppermalink(\pagi::content(\index::sub(1))))
+          next: \Optional(\Text) = \if(\index::lt(\pagi::content::len()), \pagi::base\ppermalink(\pagi::content(\index::add(1))))
+        \end(var)
+
+        \match(\item):
+        :(\Page):|\p|
+          \buildPage(\pagi::title\: \p::title, \pagi::base\p::permalink):
+            \header(\pagi::title\: \p::title):
+              \Links(\prev, \next):
+                \for(\pagi::content, collector=\Concat):|\other|
+                  <li\if(\ppermalink(\other)::eq(\p::permalink), \ class\="current")><a href="/\pagi::base\ppermalink(\other)">\ptitle(\other)</a></li>
+                \end(for)
+              \end(Links)
+            \end(header)
+            <main>
+              \map(\p::content, \blocks, collector=\Concat)
+            </main>
+            <footer class="paginator">
+            \if(\prev):|\link|
+              <a href="/\link" class="pagenav prev"><i class="icon-angle-left"></i> Previous</a>
+            :else:
+              <span></span>
+            \end(if)
+            \if(\next):|\link|
+              <a href="/\link" class="pagenav next">Next <i class="icon-angle-right"></i></a>
+            :else:
+              <span></span>
+            \end(if)
+            </footer>
+          \end(buildPage)
+        :(\TourPage):|\s|
+          \buildPage(\pagi::title\: \s::title, \pagi::base\s::permalink, bclass=split, script=true):
+            <div class="left">
+              \header(Tour: \s::title):
+                \Links(\prev, \next):
+                  \for(\pagi::content, collector=\Concat):|\other|
+                    <li\if(\ppermalink(\other)::eq(\s::permalink), \ class\="current")><a href="/\pagi::base\ppermalink(\other)">\ptitle(\other)</a></li>
+                  \end(for)
+                \end(Links)
+              \end(header)
+              <main>
+                \map(\s::left, \blocks, collector=\Concat)
+              </main>
+              <footer class="paginator">
+              \if(\prev):|\link|
+                <a href="/\link" class="pagenav prev"><i class="icon-angle-left"></i> Previous</a>
+              :else:
+                <span></span>
+              \end(if)
+              \if(\next):|\link|
+                <a href="/\link" class="pagenav next">Next <i class="icon-angle-right"></i></a>
+              :else:
+                <span></span>
+              \end(if)
+              </footer>
+            </div><div class="right">
+              \map(\s::right, \blocks, collector=\Concat)
+            </div>
+            <input type="checkbox" id="popup-shown">
+            <div id="popup">
+              <div id="popup-content">
+                <h2 id="popup-title"><span></span></h2>
+                <div id="popup-main"></div>
+                <label for="popup-shown" id="popup-close">Close</label>
+              </div>
+            </div>
+          \end(buildPage)#
+          \for(\s::right, collector=\Concat):|\data|
+            \for(\inputs(\data), collector=\Concat):|\i|
+              \Output(name=\pagi::base\s::permalink/\i::name.ny):
+                \i::content
+              \end(Output)
             \end(for)
-          \end(header)
-          <main>
-            \map(\s::left, \blocks, collector=\Concat)
-          </main>
-        </div><div class="right">
-          \map(\s::right, \blocks, collector=\Concat)
-        </div>
-        <input type="checkbox" id="popup-shown">
-        <div id="popup">
-          <div id="popup-content">
-            <h2 id="popup-title"><span></span></h2>
-            <div id="popup-main"></div>
-            <label for="popup-shown" id="popup-close">Close</label>
-          </div>
-        </div>
-      \end(buildPage)
+          \end(for)
+        \end(match)
+      \end(for)
+    \end(matcher)
+
+    inputs = \matcher:
+    :(\Section):|\s|
+    :(\Para):
+    :(\Split):
+    :(\MaxWidth):
+    :(\Code):
+    :(\Interactive):|\i|
+      \for(\i::inputs):|\input|
+        \input
+      \end(for)
+    :(\Svg):|\svg|
     \end(matcher)
 
     blocks = \matcher:
@@ -264,6 +371,10 @@
       \map(\s::right, \blocks, collector=\Concat)
       </div>
       </div>\
+    :(\MaxWidth):|\m|
+      <div class="max-width">
+      \map(\m::content, \blocks, collector=\Concat)
+      </div>
     :(\Code):|\c|
       <pre><code>\if(\c::highlight, \highlight(code=\c::content), \c::content)</code></pre>\
     :(\Interactive):|\i|
@@ -290,32 +401,22 @@
           \end(if)
           <button type="submit"><i class="icon-cog-alt"></i> Interpret</button>
         </fieldset>
-        \for(\i::inputs):|\input, \index|
-          <template id="input-\index">\input::content</template>
-        \end(for)
         <script>
           window.editor = ace.edit("editor");
           window.inputs = {};
           \for(\i::inputs):|\input, \index|
-            window.inputs["\input::name"] = ace.createEditSession(document.getElementById("input-\index").innerHTML);
-            \if(\index::eq(1)):
-              window.editor.setSession(window.inputs["\input::name"]);
-            \end(if)
+            fetch("\input::name.ny").then((r) => r.text()).then((text) => {
+              window.inputs["\input::name"] = ace.createEditSession(text);
+              \if(\index::eq(1)):
+                window.editor.setSession(window.inputs["\input::name"]);
+              \end(if)
+            });
             document.getElementById("module-\index").addEventListener("change", function() {
               window.editor.setSession(window.inputs[this.value]);
             });
           \end(for)
         </script>
       </form>
-    :(\Pager):|\p|
-      <div class="pager">
-        \if(\p::prevLink):|\l|
-          <a href="\l" class="prev"><i class="icon-angle-left"></i> Previous</a>
-        \end(if)
-        \if(\p::nextLink):|\l|
-          <a href="\l" class="next">Next <i class="icon-angle-right"></i></a>
-        \end(if)
-      </div>
     :(\Svg):|\svg|
       \render(\svg)
     \end(matcher)

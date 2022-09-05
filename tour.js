@@ -36,15 +36,13 @@ window.execNyarna = function(e) {
   interpreter.then((n) => {
     const input = new Input(n);
     const form = e.target;
-    let mainName = false;
     for (const [name, editor] of Object.entries(window.inputs)) {
       input.pushInput(name, editor.getValue());
-      if (!mainName) mainName = name;
     }
     for (const ip of form.querySelectorAll(".interpret .arg > input")) {
       input.pushArg(ip.name, ip.value);
     }
-    const result = input.process(mainName);
+    const result = input.process("input");
     if (result.errors) {
       showPopup(false, [{name: "errors", content: result.errors}]);
     } else {

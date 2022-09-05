@@ -119,7 +119,308 @@
   \end(Split)
 \end(Page)
 
-\TourPage(Introduction, permalink=tour/):
+\Paginated(Overview, base=overview/):
+  \Page(Motivation, permalink=motivation/):
+    \MaxWidth:
+      Nyarna is a \Emph(markup language) and mostly designed towards use-cases similar to those of \Link(https://www.latex-project.org, Latex).
+      It \Link(https://journals.plos.org/plosone/article?id\=10.1371/journal.pone.0115069, has been shown) that efficiency of LaTeX users lacks behind that of Microsoft Word users.
+      Nyarna attempts to alleviate some of LaTeX' problems, like the steep learning curve and cryptic errors, to allow for more efficient document authoring while still providing access to a features set similar to that of LaTeX.
+
+      There are quite some existing tools that also provide markup for authoring documents.
+      The popular ones are unable to provide the feature set of LaTeX for several reason, the most important one usually being the inability to extend the additional functionality within the provided syntax.
+      For example, \Link(https://docbook.org, DocBook) provides an XML schema to write documents in – you can use everything defined by this schema, but if something is not covered by that schema, you're out of luck.
+      Another feature that is usually missing is the ability to implement and use macros – and if it exists, you typically must implement it via the API of the processor, outside the markup language (as is the case in both \Link(https://asciidoctor.org, Asciidoctor) and \Link(https://docutils.sourceforge.io/rst.html, reStructuredText)).
+
+      Another set of markup languages is available for more rigid data structures:
+      \Link(https://www.json.org/, JSON), \Link(https://toml.io/, TOML) and \Link(https://yaml.org, YAML) would be the most popular ones.
+      These usually define a tree or graph that contains scalar values, lists, and dictionaries.
+      The shortcomings are mostly the same here, with \Link(https://dhall-lang.org, Dhall) being an exception in that it actually provides functions and types.
+
+      In sum, few markup languages exist that provide the full flexibility and extendability of LaTeX.
+      Nyarna has been designed to be such a language, while also looking at other existing languages and taking inspiration from them.
+
+      What sets Nyarna's design apart from LaTeX is that it understands structure.
+      Commands are not simple macro invocations that procedurally generate the output during processing.
+      Instead, they work much more like a typical programming language:
+      Commands call functions, construct compound objects or retrieve variable values.
+      It has a static type system that can describe typical LaTeX input structures.
+      This gives you structural validation that you would need external tools for in languages like XML or JSON.
+      And to reach the level of extensibility LaTeX provides, Nyarna offers functionality to extend existing schemas right in the language.
+    \end(MaxWidth)
+  \end(Page)
+
+  \Page(Processing Model, permalink=processing/):
+    \Split:
+      With all the LaTeX libraries available at \Link(https://www.ctan.org, CTAN), it would be impossible for Nyarna to cover even a small percentage of functionality available for LaTeX, would it start to build up its own ecosystem.
+      Thus, Nyarna's processing model has been designed for leveraging existing technology.
+      Nyarna's command line interface specifically caters towards interaction with other tools.
+
+      Nyarna takes one main \Emph(module) (usually a file) as input.
+      From this, Nyarna generates a \Emph(document).
+      This is the first processing step, which also checks your input against its declared schema, thus validating it.
+
+      The main module you give can refer to other modules, including such modules that could be processed standalone.
+      These will then be imported and become part of the input.
+      The main module may also define parameters for which arguments can be given, which gives Nyarna capabilities similar to those of a templating processor.
+
+      The second step is to create output from the generated document.
+      You can generate any number of named outputs, each of which usually contains plain text again.
+      A typical use-case would be to generate one or more \Inline(.tex) files that can then be further processed with LaTeX.
+      Nyarna doesn't predefine what kind of files and text formats can be generated, so you can implement a \Emph(backend) for any format you need.
+      This way, Nyarna can be used on top of existing technology.
+
+      The separation of those two steps has a couple of implications:
+      Firstly, to check your document, you do not need to process it completely, like you would do in LaTeX.
+      It suffices to execute the first step.
+      This makes checking input faster and has good potential to be used in editor tooling.
+
+      Furthermore, you can select the implementation used for the second step, so that you can, from the same input, generate different outputs.
+      For example, you could, from the same input, generate either LaTeX or HTML, using the suitable backend.
+      Besides targeting different formats for presenting your document, this can also be used for tooling.
+      For example, you could use a backend that reduces your input to plain text without any markup, which you can then pipe into tools that check for spelling and grammar.
+
+      Finally, this design allows you to \Emph(write once)\:
+      Even after you have written your input, if you need the contained data in a new format, you have the full flexibility of adding a new backend that transforms the existing input into that format.
+      You won't have to rewrite your input manually.
+    :right:
+      \Svg(470, 700, Processing a Nyarna input module):
+        \Rect(170, 5, input module)
+        \MultiRect(5, 50, arguments)
+        \MultiRect(325, 50, imported, modules)
+        \Arrow(M 230 85 v 63)
+        \Arrow(M 65 130 v 55 h 128)
+        \Arrow(M 385 130 v 55 h -118)
+        \Circ(230, 185, 30, eval)
+        \Arrow(M 230 215 v 38)
+        \Rect(170, 260, initial, document)
+        \Arrow(M 230 340 v 38)
+        \Circ(230, 425, 40, process)
+        \Arrow(M 230 465 v 38)
+        \MultiRect(170, 530, output, documents)
+      \end(Svg)
+    \end(Split)
+  \end(Page)
+
+  \Page(Syntax, permalink=syntax/):
+    \Split:
+      Nyarna's syntax is primarily inspired by LaTeX.
+      Some may say that this kind of syntax is outdated or clunky, but it actually caters to Nyarna's use cases quite well.
+      Alternatives have been evaluated and deemed inept:
+      Indentation-based structuring (like Python or YAML) isn't a good fit for a language where data structures can frequently be longer than what's visible on the screen.
+      Minimal syntax like \Link(https://asciidoc.org, AsciiDoc) doesn't provide a sensible way of accessing more complex features.
+
+      The syntax, like LaTeX'es, assumes that by default, input is literal data.
+      It then provides a small set of special characters that start command structures.
+      Similar to LaTeX, you are able to modify this set of characters.
+
+      In LaTeX, each command defines how you are to provide its arguments:
+      It may want them positionally (after the command, typically within \Inline({…})), named (like \Inline([&lt;name&gt;\=&lt;value&gt;\, …])), or as block (between \Inline(\\begin{env}…\\end{env})).
+      Nyarna unifies these by allowing the usage any mechanism for each argument when calling an entity.
+      It also uses parentheses and commas for arguments that are not blocks, which is syntax a typical user might be more familiar with.
+    :right:
+      \Code(highlight=true):
+        This is literal data.
+        Here's a command: \if(true, spam, egg)
+
+        \if(true,     # give arguments positional,
+            then=spam # named,
+        ):
+          egg         # or as block
+        \end(if)
+
+        \if(true):
+          spam # You can have multiple blocks
+        :else:
+          egg  # by separating them with names
+        \end(if)
+      \end(Code)
+    \end(Split)
+
+    \Split:
+      Some LaTeX commands introduce new syntax or change how following content is parsed.
+      For example, \Inline(\\begin{verbatim}) would parse all following text as content regardless of command characters, until it sees \Inline(\\end{verbatim}).
+      This is defined per command.
+
+      Nyarna provides similar functionality, but again unifies it by allowing the usage of parser-influencing definitions on any block.
+      Each block can explicitly define how it modifies the parser, or can implicitly inherit a default that is defined on the parameter the block argument binds to.
+
+      Some LaTeX environments, like for example TikZ, even introduce completely new syntax.
+      Nyarna can currently do this in a limited way for predefined functionality, like the syntax for defining variables or types.
+      Eventually, it is planned to add functionality to let the user define syntax and use it in blocks.
+    :right:
+      \Code(highlight=true):
+        \block:<off #>
+          The # character doesn't start a comment in
+          this block, since it has been turned off.
+        \end(block)
+        # after the block, the change is reverted.
+
+        \declare:
+          Bold = \Record:
+            content: \Text {primary}:<off \>
+          \end(Record)
+        \end(declare)
+
+        \Bold:
+          \ doesn't start commands in here due to
+          the default block header that is inherited.
+        \end(Bold)
+      \end(Code)
+    \end(Split)
+
+    \Split:
+      A syntactic feature that doesn't exist in LaTeX is \Emph(swallowing)\:
+      Instead of starting a block for a nested level and ending it with \Inline(\\end\(…\)), you can have a call swallow the following content till the end of the surrounding block.
+      This block will then be an argument as if it were a primary or named block.
+      Swallowing also ends when a following call swallows at the same or a higher level.
+
+      With swallowing, Nyarna allows you to have freestanding heading lines of chapters, sections, subsections etc., while still being able to define that they create nested structure.
+      This is useful to avoid deep syntactic nesting and has been inspired by markup languages like Markdown, AsciiDoc or reStructuredText.
+
+      The example code assumes that the given called heading types have been declared somewhere.
+    :right:
+      \Code(highlight=true):
+        \Chapter(First Chapter):1> # swallows at a depth of 1
+
+        Some content
+
+        \Section(First Section):2> # contained in chapter
+
+        More content
+
+        # same swallow depth ends previous section
+        \Section(Another):2>
+
+        # ends previous section and chapter
+        \Chapter(Second Chapter):1>
+
+        # swallowing can be implicit if the target
+        # entity is set up appropriately.
+        \Section(Implict)
+
+        Content of section Implicit
+      \end(Code)
+    \end(Split)
+  \end(Page)
+
+  \Page(Type System, permalink=types/):
+    \Split:
+      Nyarna's type system has been designed around the concept that types carry the content's semantics.
+      For example, if you want to produce output that renders some part of a text in boldface, you would define a record type \Inline(\\Bold) with a single content field, and use that in your input.
+
+      For a typical document, this implies that input structures are generally literal text, interleaved with record instances.
+      To be able to model this in the type system, Nyarna uses a \Link(https://en.wikipedia.org/wiki/Lattice_\(order\), lattice) to define relationships between types.
+      For example, the basic type \Inline(\\Text) and a record type \Inline(\\Bold) have the supertype \Inline(\\Intersection\(\\Text\, \\Bold\)).
+      Content where you concatenate values of these two types would then have the type \Inline(\\Concat\(\\Intersection\(\\Text\, \\Bold\)\)).
+
+      The type system contains some types specific for describing the structure of documents:
+      Besides \Inline(\\Concat) types, which describe concatenations, there are \Inline(\\Sequence) types that describe a list of paragraphs – or more abstractly put, a sequence of separated items.
+
+      Nyarna infers types if possible.
+      For example, you do not need to specify which type a function returns, as that can be calculated automatically.
+      You do need to specify types of record fields and input parameters.
+    :right:
+      \Code(highlight=true):
+        This paragraph contains some literal text
+        \Bold(and some bold text).
+
+        \declare:
+          # function return types are usually inferred,
+          # even for recursive functions.
+          writeNTimes = \func:
+            text: \Text
+            num : \Natural
+          :body:
+            \if(\num::gt(0), \text\writeNTimes(
+              \text, \num::sub(1)))
+          \end(func)
+        \end(declare)
+
+        \writeNTimes(Spam, 42)
+      \end(Code)
+    \end(Split)
+
+    \Split:
+      With its somewhat peculiar set of types, Nyarna is able to understand operations on concatenation and paragraph structures:
+
+      Concatenations will always be automatically flattened – you cannot have a concatenation value inside of a concatenation value.
+      Also, concatenation of text values is an operation which generates a single text value.
+      Thus, a concatenation value will never contain consecutive text values.
+      Finally, a concatenation whose elements are all of type \Inline(\\Text), has the inferred type \Inline(\\Text).
+      \Inline(\\Concat\(\\Text\)) is not a valid type.
+
+      Similarly, \Inline(\\Sequence) values will also be automatically flattened.
+      However, they are able to contain \Inline(\\Concat) values, and don't collapse on \Inline(\\Text).
+      There is an implicit conversion defined from \Inline(\\Sequence) to \Inline(\\Concat) types so that you can use empty lines in places that don't expect a sequence.
+      Any paragraph that has the type \Inline(\\Void) will be evaluated, but stripped from the resulting sequence value.
+      This makes it simple to separate declarations like \Inline(\\declare) from content.
+
+      If you want a data structure that doesn't imply these operations, there's also \Inline(\\List).
+    :right:
+      \Code(highlight=true):
+        The following call \f(x) is part of a
+        concatentation and surrounded by text.
+
+        \block:
+          This call to 'block' has two paragraphs,
+          its inferred type will be Sequence(Text).
+
+          The call simply returns this content,
+          the paragraphs will be flattened.
+        \end(block)
+      \end(Code)
+    \end(Split)
+
+    \Split:
+      To process the input, Nyarna needs a way to separate differently typed values.
+      For this, there's \Inline(\\match) and \Inline(\\matcher), where the former is a control structure while the latter defines a function.
+      They infer their return type by calculating the intersection of the type of each branch.
+      \Inline(\\matcher) also infers the type of its single parameter from the set of given types.
+
+      These structures are the core of backend processing:
+      You can walk over an input concatenation, and take action based on which type each item has.
+      Eventually you'll generate a \Inline(\\Text) value which can then be the output.
+
+      By separating type-based dispatching from actual types, you are able to implement multiple independent backends to generate different output from your input.
+
+      This way of processing content has been primarily inspired by \Link(https://developer.mozilla.org/en-US/docs/Web/XSLT, XSLT).
+      However, unlike XSLT's path-based selection, Nyarna's type-based approach guarantees type safety.
+
+      A section on schemas is currently missing from this overview.
+      In the meantime, I recommand taking the \Link(/tour, instead to learn about those).
+    :right:
+      \Code(highlight=true):
+        \declare:
+          Bold = \Record:
+            content: \Concat(\Content) {primary}
+          \end(Record)
+          Italic = \Record:
+            content: \Concat(\Content) {primary}
+          \end(Record)
+          Content = \Intersection(\Bold, \Italic, \Text)
+          procContent = \matcher:
+          :(\Text):|\t|
+            \t
+          :(\Bold):|\b|
+            &lt;b&gt;\map(\b::content, \procContent)&lt;/b&gt;
+          :(\Italic):|\i|
+            &lt;i&gt;\map(\i::content, \procContent)&lt;/i&gt;
+          \end(matcher)
+        \end(declare)
+
+        \map(func=\procContent):
+          As we see \Italic(above), matchers
+          \Bold(can be \Italic(used)) recursively
+          to process typical structures.
+        \end(map)
+      \end(Code)
+    \end(Split)
+  \end(Page)
+\end(Paginated)
+
+\Paginated(Tour, base=tour/):
+
+\TourPage(Introduction, permalink=):
   This tour introduces you to Nyarna's language features.
   On your right you'll find the example code for each step.
   You can edit and interpret the code in your browser.
@@ -148,77 +449,13 @@
 
   Since there currently is no proper language specification, the tour will contain \Emph(Details) sections with more extensive information on the currently discussed features.
   You may skip these if you just want to have a quick impression on the language.
-
-  \Pager(nextLink=/tour/overview/)
 :right:
   \Interactive(who):
     \Input(input, \example)
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Overview, permalink=tour/overview/):
-  Before we start discussing Nyarna's syntax and semantics, let's get the big picture.
-  Nyarna can probably best be described as a \Emph(markup language)\:
-  It enables you to enter structured data with a syntax tailored to use cases similar to those of LaTeX.
-
-  What makes Nyarna's approach different is that it is not designed around a limited set of output formats.
-  Instead, it allows you to write any number of transformations that generate different outputs for a given input structure.
-  One goal of this approach is to be able build upon existing technologies like LaTeX, HTML and so on, instead of starting a separate ecosystem which would never be able to compete.
-
-  The diagram on the right shows the general flow of processing an input \Emph(module).
-  The given input module may import other modules, and may define parameters for which \Emph(arguments) must be supplied by the caller.
-
-  The evaluation of the modules and arguments creates an initial \Emph(document) with a \Emph(schema) and an empty \Emph(name).
-  The schema defines how the content of the document is structured and how it can be processed.
-  This sets Nyarna apart from languages like XML or JSON which also provide ways to define schemas:
-  In Nyarna, the schema not only defines how the input is structured, but also implements its processing.
-
-  A \Emph(backend) of a schema describes how one or multiple named documents can be generated from a document having this schema.
-  After creating the inital document, the Nyarna processor will apply the selected schema backend, creating additional documents.
-
-  The final result of processing is a set of \Emph(output documents).
-  These will then be returned to the caller.
-  Output documents contain text, typically using some foreign syntax like LaTeX or HTML.
-  Text-only output is required by the command line interface, which writes each output document to a file.
-  If you use Nyarna's API from an application, you can also get output documents with a more complex structure.
-  You can use this for example to input configuration.
-
-  You can have multiple output documents so that you can for example output several HTML files that make up a website, or a collection of LaTeX and BibTeX sources that can be compiled into a PDF file with the respective tools.
-  Nyarna conforms to the Unix philosophy of \Emph(do one thing and do it well) in that it doesn't care what happens with the outputs.
-  You are supposed to use existing tools, such as shell scripts or a Makefile, to facilitate downstream processing.
-
-  Unless the input sets a schema, the initial document will have the \Emph(output schema) which defines its content to be text, and has no backend.
-  This will make the initial document the sole output document without further processing.
-  The majority of examples we'll see in this tour make use of this to show you Nyarna's features in a minimalist pipeline.
-  Since the initial document's name is empty, it would be written to standard output if produced on the command line.
-
-  The value Nyarna hopes to provide is modularity, flexibility, and usability:
-  You can write a schema once and use it to input and process any number of documents.
-  If you already have a number of documents with a certain schema and need the contained data in a new format, you can easily extend the existing schema with a new backend, without altering the documents.
-  Finally, the syntax of Nyarna has been designed for easy error discovery via a static type system and less arbitraryness compared to LaTeX, while still providing a similar feature set.
-
-  And with that, let's dive into Nyarna's syntax.
-
-  \Pager(/tour/, /tour/basics/)
-:right:
-  \Svg(470, 700, Processing a Nyarna input module):
-    \Rect(170, 5, input module)
-    \MultiRect(5, 50, arguments)
-    \MultiRect(325, 50, imported, modules)
-    \Arrow(M 230 85 v 63)
-    \Arrow(M 65 130 v 55 h 128)
-    \Arrow(M 385 130 v 55 h -118)
-    \Circ(230, 185, 30, eval)
-    \Arrow(M 230 215 v 38)
-    \Rect(170, 260, initial, document)
-    \Arrow(M 230 340 v 38)
-    \Circ(230, 425, 40, process)
-    \Arrow(M 230 465 v 38)
-    \MultiRect(170, 530, output, documents)
-  \end(Svg)
-\end(TourPage)
-
-\TourPage(Basics, permalink=tour/basics/):
+\TourPage(Basics, permalink=basics/):
   By default, input characters are processed as content.
   The “\Inline(\#)” character starts a \Emph(comment), with all following characters up to and including the following line ending being part of the comment.
   If the last non-whitespace character of a comment is another “\Inline(\#)” (i.e. not the initial one), the line ending is excluded from the comment.
@@ -230,8 +467,6 @@
   Empty lines separate \Emph(paragraphs).
   If a paragraph does not produce any output, it will be removed after evaluation.
   You can use paragraphs to cleanly separate code like declarations or assignments from code that produces output.
-
-  \Pager(/tour/overview/, /tour/commands/)
 
   \Section(Details)
 
@@ -265,7 +500,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Commands, permalink=tour/commands/):
+\TourPage(Commands, permalink=commands/):
   \Emph(Commands) start with a \Emph(symbol reference), which is a \Emph(command character) followed by a \Emph(symbol name).
 
   A symbol reference can stand alone, which makes it a \Emph(value retrieval).
@@ -278,8 +513,6 @@
 
   This concludes the simple command structures.
   Next, we will look at command structures that have nested levels.
-
-  \Pager(/tour/basics/, /tour/levels/)
 
   \Section(Details)
 
@@ -326,7 +559,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Nested Levels, permalink=tour/levels/):
+\TourPage(Nested Levels, permalink=levels/):
   Commands can have two kinds of \Emph(arguments)\:
   \Emph(flow arguments) are given in parentheses “\Inline(\(…\))” while \Emph(blocks) are appended after a potential list of flow arguments.
 
@@ -342,8 +575,6 @@
 
   In blocks, the indentation of the first non-empty line defines the indentation of the block.
   This indentation will be stripped away and is not processed as content.
-
-  \Pager(/tour/commands/, /tour/calls/)
 
   \Section(Details)
 
@@ -415,7 +646,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Calls and Assignments, permalink=tour/calls/):
+\TourPage(Calls and Assignments, permalink=calls/):
   You \Emph(call) a subject by giving a list of flow arguments, a list of blocks, or both.
   You can give each argument either as flow argument or block.
   This generalizes over LaTeX's commands and environments.
@@ -433,8 +664,6 @@
   \Emph(Assignments) are structurally similar to calls.
   They start with a “\Inline(\:\=)” after the subject, followed by either an argument list or a block list, which must contain exactly one unnamed argument.
   Assignable subjects are variables, fields of variables, as well as List and HashMap accessors.
-
-  \Pager(/tour/levels/, /tour/types/)
 
   \Section(Details)
 
@@ -497,7 +726,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Basic Types, permalink=tour/types/):
+\TourPage(Basic Types, permalink=types/):
   \Inline(\\Text) is the default type for the output.
   Unless we specify something else, our input must be an expression of type \Inline(\\Text).
   You may have noticed that we have never written a \Inline(Record) value to the output, this is why.
@@ -518,8 +747,6 @@
   These functions are currently sparse, since the standard library has not been seriously worked on yet.
 
   Where \Inline(\\Text) is expected, you can give any scalar value and Nyarna will convert it to text.
-
-  \Pager(/tour/calls/, /tour/declare/)
 
   \Section(Details)
 
@@ -554,7 +781,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Declarations, permalink=tour/declare/):
+\TourPage(Declarations, permalink=declare/):
   Besides Types, you can also define \Emph(functions) in a \Inline(\\declare) block.
   \Inline(\\declare) is one of the symbols available in every namespace and will put all symbols into the namespace which has been used to call it.
   You can give a type as flow argument which then declares symbols in the namespace of that type instead.
@@ -566,8 +793,6 @@
   Record types declare fields in the same way functions declare parameters.
   Any parameter configuration on a record type's fields will be used for its constructor signature.
   A typical configuration is to set the \Inline(primary) parameter, so that it takes the primary block as argument in a call.
-
-  \Pager(/tour/types/, /tour/structural/)
 
   \Section(Details)
 
@@ -637,7 +862,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Structural Types, permalink=tour/structural/):
+\TourPage(Structural Types, permalink=structural/):
   By mixing text content with commands, we create a \Emph(concatenation).
   By adding empty lines, we create \Emph(paragraphs), which can in turn be concatenations.
   Both are syntactic constructs that produce typed expressions.
@@ -659,8 +884,6 @@
 
   You may think, if syntactic paragraphs have a \Inline(\\Sequence\(\\Text\)) type, why can we write multiple paragraphs in the input that expects the type \Inline(\\Text)?
   That is because an implicit conversion exists from \Inline(\\Sequence\(\\Text\)) to \Inline(\\Text), which merges the paragraphs with the separators.
-
-  \Pager(/tour/declare/, /tour/schemas/)
 
   \Section(Details)
 
@@ -728,7 +951,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Schemas, permalink=tour/schemas/):
+\TourPage(Schemas, permalink=schemas/):
   In the previous example, we have already seen how to transform a structured value into HTML.
   Schemas offer a more structured approach to this:
   Typically, you write a schema file that contains all required types and defines the root type, and then in your input, you import that schema and use it.
@@ -749,8 +972,6 @@
 
   Interpreting our input will automatically use the \Inline(html) backend as it's the only backend defined.
   We can define multiple backeds for our schema, for example if we also wish to produce LaTeX source code.
-
-  \Pager(/tour/structural/, /tour/extensions/)
 
   \Section(Details)
 
@@ -811,7 +1032,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Extensions, permalink=tour/extensions):
+\TourPage(Extensions, permalink=extensions/):
   An important feature of Nyarna is its ability to extend existing schemas.
   Imagine someone else defined a schema that produces HTML, and you want to use that.
   However you want to produce a HTML tag that is not supported by that schema.
@@ -827,8 +1048,6 @@
   The example code extends the schema we previously defined with a new type \Inline(\\Emph) that allows us to enter italic code.
 
   By calling the \Inline(use) function on the \Inline(\\SchemaDef), we can set the backend we want to use, and give the extensions we want to inject.
-
-  \Pager(/tour/schemas/, /tour/parameters/)
 :right:
   \Interactive:
     \Input(input):
@@ -909,7 +1128,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Parameters, permalink=tour/parameters/):
+\TourPage(Parameters, permalink=parameters/):
   A Nyarna module can define parameters.
   When importing a module with parameters, you must supply arguments for those.
   When calling a main module that defines parameters, the caller must supply arguments.
@@ -926,8 +1145,6 @@
   \Code(highlight = false):
     nyarna input.ny --txt Text --num 42
   \end(Code)
-
-  \Pager(/tour/extensions/, /tour/swallowing/)
 :right:
   \Interactive(txt, num):
     \Input(input):
@@ -943,7 +1160,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Swallowing, permalink=tour/swallowing/):
+\TourPage(Swallowing, permalink=swallowing/):
   Block indentation makes sense for programming languages where you can often split up code into smaller parts if indentation gets too deep.
   But for the possibly long content Nyarna has been designed for, it doesn't always make sense – especially if the block takes up more than a whole screen.
 
@@ -960,8 +1177,6 @@
 
   You can define a call parameter to be \Emph(auto-swallowing).
   When you then call the entity with that parameter without an argument for that parameter, and without a block list, the following content will automatically be swallowed.
-
-  \Pager(/tour/parameters/, /tour/headers/)
 :right:
   \Interactive:
     \Input(input):
@@ -1053,7 +1268,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Block Headers, permalink=tour/headers/):
+\TourPage(Block Headers, permalink=headers/):
   Any block can have a \Emph(header).
   Named blocks have their header behind their name, while the primary block has its header after the colon that starts the block list.
   A block header may consist of a \Emph(configuration), a \Emph(capture list) and a \Emph(swallow indicator).
@@ -1080,8 +1295,6 @@
   Regardless of what you do to command characters, you will always be able to end the block list with the “\Inline(\\end\(…\))” structure.
   The parser has a lookahead that checks for the current identifier inside that structure and will parse it only as block list end if the identifier is the expected one.
   You can change the expected identifier with a “\Inline(\= &lt;identifier&gt;)” in a call's argument list to give you full control of how the block ends.
-
-  \Pager(/tour/swallowing/, /tour/captures/)
 :right:
   \Interactive:
     \Input(input):
@@ -1118,7 +1331,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Capture Variables, permalink=tour/captures/):
+\TourPage(Capture Variables, permalink=captures/):
   A block header may define one or more \Emph(capture variables).
   These can be used on certain keyword calls to provide one or more symbols that shall reference relevant values.
   Capture variables are not assignable.
@@ -1127,8 +1340,6 @@
   The variable can then be used to reference the existing value.
 
   The \Inline(\\for) keyword allows for up to two capture variables in its body, with the first referencing the current item, and the second referencing its index.
-
-  \Pager(/tour/headers/, /tour/conversions/)
 :right:
   \Interactive:
     \Input(input):
@@ -1149,7 +1360,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Conversions, permalink=tour/conversions/):
+\TourPage(Conversions, permalink=conversions/):
   Text input in Nyarna is of one of two types, \Inline(Literal) or \Inline(Space).
   These types are internal and cannot be referenced in user code.
 
@@ -1174,8 +1385,6 @@
   The example shows this happening by assigning the function's return value to two variables where one allows \Inline(\\Text) while the other doesn't.
   The second assignment will create an implicit conversion that strips away the whitespace.
   Try it out!
-
-  \Pager(/tour/captures/, /tour/evaluation/)
 
   \Section(Details)
 
@@ -1227,7 +1436,7 @@
   \end(Interactive)
 \end(TourPage)
 
-\TourPage(Static and Dynamic Evaluation, permalink=tour/evaluation/):
+\TourPage(Evaluation, permalink=evaluation/):
   Nyarna's keywords sometimes need to evaluate expressions statically.
   For example, the \Inline(\\func) keyword needs to evaluate parameter types (but not default values) statically.
   This is important because it means that you can't use dynamic values, such as variables and parameter values, in certain contexts.
@@ -1242,8 +1451,6 @@
   This is possible because even parameter declarations are first-class values with the type \Inline(\\Location).
 
   Like the rest of the standard library, \Inline(meta) is incomplete and currently mostly a proof-of-concept.
-
-  \Pager(/tour/conversions/)
 :right:
   \Interactive:
     \Input(input):
@@ -1281,3 +1488,5 @@
     \end(Input)
   \end(Interactive)
 \end(TourPage)
+
+\end(Paginated)

@@ -70,11 +70,11 @@
         "zicross": "zicross"
       },
       "locked": {
-        "lastModified": 1662116808,
-        "narHash": "sha256-23nWF5yg9b0Xtm/qaFArtq9tdSSRjGCY/UJrjoWTs6c=",
+        "lastModified": 1662388110,
+        "narHash": "sha256-PdtGqRufu1ADEf+B0gzyJgAX4HS8of1EncjwbgHhLHI=",
         "owner": "nyarnalang",
         "repo": "nyarna-zig",
-        "rev": "1d4eec2d5ab7a335ac72a4310bf085cf82693781",
+        "rev": "25d94b8072cf8473e4ca880e5339fc8a4d46f42d",
         "type": "github"
       },
       "original": {
