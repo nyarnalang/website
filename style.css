@@ -318,9 +318,7 @@ footer.paginator {
   max-width: 70ch;
   box-sizing: border-box;
   margin: 0;
-  padding-bottom: 1em;
-  padding-left: .5em;
-  padding-right: .5em;
+  padding: .5em;
 }
 
 .mods > legend {
