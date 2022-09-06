@@ -1,18 +1,23 @@
 # nyarna.org Website
 
 This is the source of the [nyarna.org](https://nyarna.org) website.
-Build it with
+It uses [Nix Flakes](https://nixos.wiki/wiki/Flakes) as build system.
+Build the website with
+
+    nix build github:nyarnalang/website
+
+or in a working copy simply
 
     nix build
 
-in a checked-out repository.
+Building the website will build Nyarna for your system (to generate the website) and for WASM (to provide the interpreter for the tour on the website) if those are not yet available.
 
 ## Developers
 
 This site is written in Nyarna.
 `Site.ny` is the schema and `website.ny` is the content.
 
-After building, you can host it locally via
+After building, you can host the website locally via
 
     python -m http.server 80 -d result/www
 
