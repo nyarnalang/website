@@ -119,306 +119,398 @@
   \end(Split)
 \end(Page)
 
-\Paginated(Overview, base=overview/):
-  \Page(Motivation, permalink=motivation/):
-    \MaxWidth:
-      Nyarna is a \Emph(markup language) and mostly designed towards use-cases similar to those of \Link(https://www.latex-project.org, Latex).
-      It \Link(https://journals.plos.org/plosone/article?id\=10.1371/journal.pone.0115069, has been shown) that efficiency of LaTeX users lacks behind that of Microsoft Word users.
-      Nyarna attempts to alleviate some of LaTeX' problems, like the steep learning curve and cryptic errors, to allow for more efficient document authoring while still providing access to a features set similar to that of LaTeX.
+\Paginated(Overview, base=overview/):1>
 
-      There are quite some existing tools that also provide markup for authoring documents.
-      The popular ones are unable to provide the feature set of LaTeX for several reason, the most important one usually being the inability to extend the additional functionality within the provided syntax.
-      For example, \Link(https://docbook.org, DocBook) provides an XML schema to write documents in – you can use everything defined by this schema, but if something is not covered by that schema, you're out of luck.
-      Another feature that is usually missing is the ability to implement and use macros – and if it exists, you typically must implement it via the API of the processor, outside the markup language (as is the case in both \Link(https://asciidoctor.org, Asciidoctor) and \Link(https://docutils.sourceforge.io/rst.html, reStructuredText)).
+\Page(Motivation, permalink=motivation/):2>
+\MaxWidth:
+  Nyarna is a \Emph(markup language) and mostly designed towards use-cases similar to those of \Link(https://www.latex-project.org, Latex).
+  It \Link(https://journals.plos.org/plosone/article?id\=10.1371/journal.pone.0115069, has been shown) that efficiency of LaTeX users lacks behind that of Microsoft Word users.
+  Nyarna attempts to alleviate some of LaTeX' problems, like the steep learning curve and cryptic errors, to allow for more efficient document authoring while still providing access to a features set similar to that of LaTeX.
 
-      Another set of markup languages is available for more rigid data structures:
-      \Link(https://www.json.org/, JSON), \Link(https://toml.io/, TOML) and \Link(https://yaml.org, YAML) would be the most popular ones.
-      These usually define a tree or graph that contains scalar values, lists, and dictionaries.
-      The shortcomings are mostly the same here, with \Link(https://dhall-lang.org, Dhall) being an exception in that it actually provides functions and types.
+  There are quite some existing tools that also provide markup for authoring documents.
+  The popular ones are unable to provide the feature set of LaTeX for several reason, the most important one usually being the inability to extend the additional functionality within the provided syntax.
+  For example, \Link(https://docbook.org, DocBook) provides an XML schema to write documents in – you can use everything defined by this schema, but if something is not covered by that schema, you're out of luck.
+  Another feature that is usually missing is the ability to implement and use macros – and if it exists, you typically must implement it via the API of the processor, outside the markup language (as is the case in both \Link(https://asciidoctor.org, Asciidoctor) and \Link(https://docutils.sourceforge.io/rst.html, reStructuredText)).
 
-      In sum, few markup languages exist that provide the full flexibility and extendability of LaTeX.
-      Nyarna has been designed to be such a language, while also looking at other existing languages and taking inspiration from them.
+  Another set of markup languages is available for more rigid data structures:
+  \Link(https://www.json.org/, JSON), \Link(https://toml.io/, TOML) and \Link(https://yaml.org, YAML) would be the most popular ones.
+  These usually define a tree or graph that contains scalar values, lists, and dictionaries.
+  The shortcomings are mostly the same here, with \Link(https://dhall-lang.org, Dhall) being an exception in that it actually provides functions and types.
 
-      What sets Nyarna's design apart from LaTeX is that it understands structure.
-      Commands are not simple macro invocations that procedurally generate the output during processing.
-      Instead, they work much more like a typical programming language:
-      Commands call functions, construct compound objects or retrieve variable values.
-      It has a static type system that can describe typical LaTeX input structures.
-      This gives you structural validation that you would need external tools for in languages like XML or JSON.
-      And to reach the level of extensibility LaTeX provides, Nyarna offers functionality to extend existing schemas right in the language.
-    \end(MaxWidth)
-  \end(Page)
+  In sum, few markup languages exist that provide the full flexibility and extendability of LaTeX.
+  Nyarna has been designed to be such a language, while also looking at other existing languages and taking inspiration from them.
 
-  \Page(Processing Model, permalink=processing/):
-    \Split:
-      With all the LaTeX libraries available at \Link(https://www.ctan.org, CTAN), it would be impossible for Nyarna to cover even a small percentage of functionality available for LaTeX, would it start to build up its own ecosystem.
-      Thus, Nyarna's processing model has been designed for leveraging existing technology.
-      Nyarna's command line interface specifically caters towards interaction with other tools.
+  What sets Nyarna's design apart from LaTeX is that it understands structure.
+  Commands are not simple macro invocations that procedurally generate the output during processing.
+  Instead, they work much more like a typical programming language:
+  Commands call functions, construct compound objects or retrieve variable values.
+  It has a static type system that can describe typical LaTeX input structures.
+  This gives you structural validation that you would need external tools for in languages like XML or JSON.
+  And to reach the level of extensibility LaTeX provides, Nyarna offers functionality to extend existing schemas right in the language.
+\end(MaxWidth)
 
-      Nyarna takes one main \Emph(module) (usually a file) as input.
-      From this, Nyarna generates a \Emph(document).
-      This is the first processing step, which also checks your input against its declared schema, thus validating it.
+\Page(Processing Model, permalink=processing/):2>
+\Split:
+  With all the LaTeX libraries available at \Link(https://www.ctan.org, CTAN), it would be impossible for Nyarna to cover even a small percentage of functionality available for LaTeX, would it start to build up its own ecosystem.
+  Thus, Nyarna's processing model has been designed for leveraging existing technology.
+  Nyarna's command line interface specifically caters towards interaction with other tools.
 
-      The main module you give can refer to other modules, including such modules that could be processed standalone.
-      These will then be imported and become part of the input.
-      The main module may also define parameters for which arguments can be given, which gives Nyarna capabilities similar to those of a templating processor.
+  Nyarna takes one main \Emph(module) (usually a file) as input.
+  From this, Nyarna generates a \Emph(document).
+  This is the first processing step, which also checks your input against its declared schema, thus validating it.
 
-      The second step is to create output from the generated document.
-      You can generate any number of named outputs, each of which usually contains plain text again.
-      A typical use-case would be to generate one or more \Inline(.tex) files that can then be further processed with LaTeX.
-      Nyarna doesn't predefine what kind of files and text formats can be generated, so you can implement a \Emph(backend) for any format you need.
-      This way, Nyarna can be used on top of existing technology.
+  The main module you give can refer to other modules, including such modules that could be processed standalone.
+  These will then be imported and become part of the input.
+  The main module may also define parameters for which arguments can be given, which gives Nyarna capabilities similar to those of a templating processor.
 
-      The separation of those two steps has a couple of implications:
-      Firstly, to check your document, you do not need to process it completely, like you would do in LaTeX.
-      It suffices to execute the first step.
-      This makes checking input faster and has good potential to be used in editor tooling.
+  The second step is to create output from the generated document.
+  You can generate any number of named outputs, each of which usually contains plain text again.
+  A typical use-case would be to generate one or more \Inline(.tex) files that can then be further processed with LaTeX.
+  Nyarna doesn't predefine what kind of files and text formats can be generated, so you can implement a \Emph(backend) for any format you need.
+  This way, Nyarna can be used on top of existing technology.
 
-      Furthermore, you can select the implementation used for the second step, so that you can, from the same input, generate different outputs.
-      For example, you could, from the same input, generate either LaTeX or HTML, using the suitable backend.
-      Besides targeting different formats for presenting your document, this can also be used for tooling.
-      For example, you could use a backend that reduces your input to plain text without any markup, which you can then pipe into tools that check for spelling and grammar.
+  The separation of those two steps has a couple of implications:
+  Firstly, to check your document, you do not need to process it completely, like you would do in LaTeX.
+  It suffices to execute the first step.
+  This makes checking input faster and has good potential to be used in editor tooling.
 
-      Finally, this design allows you to \Emph(write once)\:
-      Even after you have written your input, if you need the contained data in a new format, you have the full flexibility of adding a new backend that transforms the existing input into that format.
-      You won't have to rewrite your input manually.
-    :right:
-      \Svg(470, 700, Processing a Nyarna input module):
-        \Rect(170, 5, input module)
-        \MultiRect(5, 50, arguments)
-        \MultiRect(325, 50, imported, modules)
-        \Arrow(M 230 85 v 63)
-        \Arrow(M 65 130 v 55 h 128)
-        \Arrow(M 385 130 v 55 h -118)
-        \Circ(230, 185, 30, eval)
-        \Arrow(M 230 215 v 38)
-        \Rect(170, 260, initial, document)
-        \Arrow(M 230 340 v 38)
-        \Circ(230, 425, 40, process)
-        \Arrow(M 230 465 v 38)
-        \MultiRect(170, 530, output, documents)
-      \end(Svg)
-    \end(Split)
-  \end(Page)
+  Furthermore, you can select the implementation used for the second step, so that you can, from the same input, generate different outputs.
+  For example, you could, from the same input, generate either LaTeX or HTML, using the suitable backend.
+  Besides targeting different formats for presenting your document, this can also be used for tooling.
+  For example, you could use a backend that reduces your input to plain text without any markup, which you can then pipe into tools that check for spelling and grammar.
 
-  \Page(Syntax, permalink=syntax/):
-    \Split:
-      Nyarna's syntax is primarily inspired by LaTeX.
-      Some may say that this kind of syntax is outdated or clunky, but it actually caters to Nyarna's use cases quite well.
-      Alternatives have been evaluated and deemed inept:
-      Indentation-based structuring (like Python or YAML) isn't a good fit for a language where data structures can frequently be longer than what's visible on the screen.
-      Minimal syntax like \Link(https://asciidoc.org, AsciiDoc) doesn't provide a sensible way of accessing more complex features.
+  Finally, this design allows you to \Emph(write once)\:
+  Even after you have written your input, if you need the contained data in a new format, you have the full flexibility of adding a new backend that transforms the existing input into that format.
+  You won't have to rewrite your input manually.
+:right:
+  \Svg(470, 700, Processing a Nyarna input module):
+    \Rect(170, 5, input module)
+    \MultiRect(5, 50, arguments)
+    \MultiRect(325, 50, imported, modules)
+    \Arrow(M 230 85 v 63)
+    \Arrow(M 65 130 v 55 h 128)
+    \Arrow(M 385 130 v 55 h -118)
+    \Circ(230, 185, 30, eval)
+    \Arrow(M 230 215 v 38)
+    \Rect(170, 260, initial, document)
+    \Arrow(M 230 340 v 38)
+    \Circ(230, 425, 40, process)
+    \Arrow(M 230 465 v 38)
+    \MultiRect(170, 530, output, documents)
+  \end(Svg)
+\end(Split)
 
-      The syntax, like LaTeX'es, assumes that by default, input is literal data.
-      It then provides a small set of special characters that start command structures.
-      Similar to LaTeX, you are able to modify this set of characters.
+\Page(Syntax, permalink=syntax/):2>
+\Split:
+  Nyarna's syntax is primarily inspired by LaTeX.
+  Some may say that this kind of syntax is outdated or clunky, but it actually caters to Nyarna's use cases quite well.
+  Alternatives have been evaluated and deemed inept:
+  Indentation-based structuring (like Python or YAML) isn't a good fit for a language where data structures can frequently be longer than what's visible on the screen.
+  Minimal syntax like \Link(https://asciidoc.org, AsciiDoc) doesn't provide a sensible way of accessing more complex features.
 
-      In LaTeX, each command defines how you are to provide its arguments:
-      It may want them positionally (after the command, typically within \Inline({…})), named (like \Inline([&lt;name&gt;\=&lt;value&gt;\, …])), or as block (between \Inline(\\begin{env}…\\end{env})).
-      Nyarna unifies these by allowing the usage any mechanism for each argument when calling an entity.
-      It also uses parentheses and commas for arguments that are not blocks, which is syntax a typical user might be more familiar with.
-    :right:
-      \Code(highlight=true):
-        This is literal data.
-        Here's a command: \if(true, spam, egg)
+  The syntax, like LaTeX'es, assumes that by default, input is literal data.
+  It then provides a small set of special characters that start command structures.
+  Similar to LaTeX, you are able to modify this set of characters.
 
-        \if(true,     # give arguments positional,
-            then=spam # named,
-        ):
-          egg         # or as block
-        \end(if)
+  In LaTeX, each command defines how you are to provide its arguments:
+  It may want them positionally (after the command, typically within \Inline({…})), named (like \Inline([&lt;name&gt;\=&lt;value&gt;\, …])), or as block (between \Inline(\\begin{env}…\\end{env})).
+  Nyarna unifies these by allowing the usage any mechanism for each argument when calling an entity.
+  It also uses parentheses and commas for arguments that are not blocks, which is syntax a typical user might be more familiar with.
+:right:
+  \Code(highlight=true):
+    This is literal data.
+    Here's a command: \if(true, spam, egg)
 
-        \if(true):
-          spam # You can have multiple blocks
-        :else:
-          egg  # by separating them with names
-        \end(if)
-      \end(Code)
-    \end(Split)
+    \if(true,     # give arguments positional,
+        then=spam # named,
+    ):
+      egg         # or as block
+    \end(if)
 
-    \Split:
-      Some LaTeX commands introduce new syntax or change how following content is parsed.
-      For example, \Inline(\\begin{verbatim}) would parse all following text as content regardless of command characters, until it sees \Inline(\\end{verbatim}).
-      This is defined per command.
+    \if(true):
+      spam # You can have multiple blocks
+    :else:
+      egg  # by separating them with names
+    \end(if)
+  \end(Code)
+\end(Split)
 
-      Nyarna provides similar functionality, but again unifies it by allowing the usage of parser-influencing definitions on any block.
-      Each block can explicitly define how it modifies the parser, or can implicitly inherit a default that is defined on the parameter the block argument binds to.
+\Split:
+  Some LaTeX commands introduce new syntax or change how following content is parsed.
+  For example, \Inline(\\begin{verbatim}) would parse all following text as content regardless of command characters, until it sees \Inline(\\end{verbatim}).
+  This is defined per command.
 
-      Some LaTeX environments, like for example TikZ, even introduce completely new syntax.
-      Nyarna can currently do this in a limited way for predefined functionality, like the syntax for defining variables or types.
-      Eventually, it is planned to add functionality to let the user define syntax and use it in blocks.
-    :right:
-      \Code(highlight=true):
-        \block:<off #>
-          The # character doesn't start a comment in
-          this block, since it has been turned off.
-        \end(block)
-        # after the block, the change is reverted.
+  Nyarna provides similar functionality, but again unifies it by allowing the usage of parser-influencing definitions on any block.
+  Each block can explicitly define how it modifies the parser, or can implicitly inherit a default that is defined on the parameter the block argument binds to.
 
-        \declare:
-          Bold = \Record:
-            content: \Text {primary}:<off \>
-          \end(Record)
-        \end(declare)
+  Some LaTeX environments, like for example TikZ, even introduce completely new syntax.
+  Nyarna can currently do this in a limited way for predefined functionality, like the syntax for defining variables or types.
+  Eventually, it is planned to add functionality to let the user define syntax and use it in blocks.
+:right:
+  \Code(highlight=true):
+    \block:<off #>
+      The # character doesn't start a comment in
+      this block, since it has been turned off.
+    \end(block)
+    # after the block, the change is reverted.
 
-        \Bold:
-          \ doesn't start commands in here due to
-          the default block header that is inherited.
-        \end(Bold)
-      \end(Code)
-    \end(Split)
+    \declare:
+      Bold = \Record:
+        content: \Text {primary}:<off \>
+      \end(Record)
+    \end(declare)
 
-    \Split:
-      A syntactic feature that doesn't exist in LaTeX is \Emph(swallowing)\:
-      Instead of starting a block for a nested level and ending it with \Inline(\\end\(…\)), you can have a call swallow the following content till the end of the surrounding block.
-      This block will then be an argument as if it were a primary or named block.
-      Swallowing also ends when a following call swallows at the same or a higher level.
+    \Bold:
+      \ doesn't start commands in here due to
+      the default block header that is inherited.
+    \end(Bold)
+  \end(Code)
+\end(Split)
 
-      With swallowing, Nyarna allows you to have freestanding heading lines of chapters, sections, subsections etc., while still being able to define that they create nested structure.
-      This is useful to avoid deep syntactic nesting and has been inspired by markup languages like Markdown, AsciiDoc or reStructuredText.
+\Split:
+  A syntactic feature that doesn't exist in LaTeX is \Emph(swallowing)\:
+  Instead of starting a block for a nested level and ending it with \Inline(\\end\(…\)), you can have a call swallow the following content till the end of the surrounding block.
+  This block will then be an argument as if it were a primary or named block.
+  Swallowing also ends when a following call swallows at the same or a higher level.
 
-      The example code assumes that the given called heading types have been declared somewhere.
-    :right:
-      \Code(highlight=true):
-        \Chapter(First Chapter):1> # swallows at a depth of 1
+  With swallowing, Nyarna allows you to have freestanding heading lines of chapters, sections, subsections etc., while still being able to define that they create nested structure.
+  This is useful to avoid deep syntactic nesting and has been inspired by markup languages like Markdown, AsciiDoc or reStructuredText.
 
-        Some content
+  The example code assumes that the given called heading types have been declared somewhere.
+:right:
+  \Code(highlight=true):
+    \Chapter(First Chapter):1> # swallows at a depth of 1
 
-        \Section(First Section):2> # contained in chapter
+    Some content
 
-        More content
+    \Section(First Section):2> # contained in chapter
 
-        # same swallow depth ends previous section
-        \Section(Another):2>
+    More content
 
-        # ends previous section and chapter
-        \Chapter(Second Chapter):1>
+    # same swallow depth ends previous section
+    \Section(Another):2>
 
-        # swallowing can be implicit if the target
-        # entity is set up appropriately.
-        \Section(Implict)
+    # ends previous section and chapter
+    \Chapter(Second Chapter):1>
 
-        Content of section Implicit
-      \end(Code)
-    \end(Split)
-  \end(Page)
+    # swallowing can be implicit if the target
+    # entity is set up appropriately.
+    \Section(Implict)
 
-  \Page(Type System, permalink=types/):
-    \Split:
-      Nyarna's type system has been designed around the concept that types carry the content's semantics.
-      For example, if you want to produce output that renders some part of a text in boldface, you would define a record type \Inline(\\Bold) with a single content field, and use that in your input.
+    Content of section Implicit
+  \end(Code)
+\end(Split)
 
-      For a typical document, this implies that input structures are generally literal text, interleaved with record instances.
-      To be able to model this in the type system, Nyarna uses a \Link(https://en.wikipedia.org/wiki/Lattice_\(order\), lattice) to define relationships between types.
-      For example, the basic type \Inline(\\Text) and a record type \Inline(\\Bold) have the supertype \Inline(\\Intersection\(\\Text\, \\Bold\)).
-      Content where you concatenate values of these two types would then have the type \Inline(\\Concat\(\\Intersection\(\\Text\, \\Bold\)\)).
+\Page(Type System, permalink=types/):2>
+\Split:
+  Nyarna's type system has been designed around the concept that types carry the content's semantics.
+  For example, if you want to produce output that renders some part of a text in boldface, you would define a record type \Inline(\\Bold) with a single content field, and use that in your input.
 
-      The type system contains some types specific for describing the structure of documents:
-      Besides \Inline(\\Concat) types, which describe concatenations, there are \Inline(\\Sequence) types that describe a list of paragraphs – or more abstractly put, a sequence of separated items.
+  For a typical document, this implies that input structures are generally literal text, interleaved with record instances.
+  To be able to model this in the type system, Nyarna uses a \Link(https://en.wikipedia.org/wiki/Lattice_\(order\), lattice) to define relationships between types.
+  For example, the basic type \Inline(\\Text) and a record type \Inline(\\Bold) have the supertype \Inline(\\Intersection\(\\Text\, \\Bold\)).
+  Content where you concatenate values of these two types would then have the type \Inline(\\Concat\(\\Intersection\(\\Text\, \\Bold\)\)).
 
-      Nyarna infers types if possible.
-      For example, you do not need to specify which type a function returns, as that can be calculated automatically.
-      You do need to specify types of record fields and input parameters.
-    :right:
-      \Code(highlight=true):
-        This paragraph contains some literal text
-        \Bold(and some bold text).
+  The type system contains some types specific for describing the structure of documents:
+  Besides \Inline(\\Concat) types, which describe concatenations, there are \Inline(\\Sequence) types that describe a list of paragraphs – or more abstractly put, a sequence of separated items.
 
-        \declare:
-          # function return types are usually inferred,
-          # even for recursive functions.
-          writeNTimes = \func:
-            text: \Text
-            num : \Natural
-          :body:
-            \if(\num::gt(0), \text\writeNTimes(
-              \text, \num::sub(1)))
-          \end(func)
-        \end(declare)
+  Nyarna infers types if possible.
+  For example, you do not need to specify which type a function returns, as that can be calculated automatically.
+  You do need to specify types of record fields and input parameters.
+:right:
+  \Code(highlight=true):
+    This paragraph contains some literal text
+    \Bold(and some bold text).
 
-        \writeNTimes(Spam, 42)
-      \end(Code)
-    \end(Split)
+    \declare:
+      # function return types are usually inferred,
+      # even for recursive functions.
+      writeNTimes = \func:
+        text: \Text
+        num : \Natural
+      :body:
+        \if(\num::gt(0), \text\writeNTimes(
+          \text, \num::sub(1)))
+      \end(func)
+    \end(declare)
 
-    \Split:
-      With its somewhat peculiar set of types, Nyarna is able to understand operations on concatenation and paragraph structures:
+    \writeNTimes(Spam, 42)
+  \end(Code)
+\end(Split)
 
-      Concatenations will always be automatically flattened – you cannot have a concatenation value inside of a concatenation value.
-      Also, concatenation of text values is an operation which generates a single text value.
-      Thus, a concatenation value will never contain consecutive text values.
-      Finally, a concatenation whose elements are all of type \Inline(\\Text), has the inferred type \Inline(\\Text).
-      \Inline(\\Concat\(\\Text\)) is not a valid type.
+\Split:
+  With its somewhat peculiar set of types, Nyarna is able to understand operations on concatenation and paragraph structures:
 
-      Similarly, \Inline(\\Sequence) values will also be automatically flattened.
-      However, they are able to contain \Inline(\\Concat) values, and don't collapse on \Inline(\\Text).
-      There is an implicit conversion defined from \Inline(\\Sequence) to \Inline(\\Concat) types so that you can use empty lines in places that don't expect a sequence.
-      Any paragraph that has the type \Inline(\\Void) will be evaluated, but stripped from the resulting sequence value.
-      This makes it simple to separate declarations like \Inline(\\declare) from content.
+  Concatenations will always be automatically flattened – you cannot have a concatenation value inside of a concatenation value.
+  Also, concatenation of text values is an operation which generates a single text value.
+  Thus, a concatenation value will never contain consecutive text values.
+  Finally, a concatenation whose elements are all of type \Inline(\\Text), has the inferred type \Inline(\\Text).
+  \Inline(\\Concat\(\\Text\)) is not a valid type.
 
-      If you want a data structure that doesn't imply these operations, there's also \Inline(\\List).
-    :right:
-      \Code(highlight=true):
-        The following call \f(x) is part of a
-        concatentation and surrounded by text.
+  Similarly, \Inline(\\Sequence) values will also be automatically flattened.
+  However, they are able to contain \Inline(\\Concat) values, and don't collapse on \Inline(\\Text).
+  There is an implicit conversion defined from \Inline(\\Sequence) to \Inline(\\Concat) types so that you can use empty lines in places that don't expect a sequence.
+  Any paragraph that has the type \Inline(\\Void) will be evaluated, but stripped from the resulting sequence value.
+  This makes it simple to separate declarations like \Inline(\\declare) from content.
 
-        \block:
-          This call to 'block' has two paragraphs,
-          its inferred type will be Sequence(Text).
+  If you want a data structure that doesn't imply these operations, there's also \Inline(\\List).
+:right:
+  \Code(highlight=true):
+    The following call \f(x) is part of a
+    concatentation and surrounded by text.
 
-          The call simply returns this content,
-          the paragraphs will be flattened.
-        \end(block)
-      \end(Code)
-    \end(Split)
+    \block:
+      This call to 'block' has two paragraphs,
+      its inferred type will be Sequence(Text).
 
-    \Split:
-      To process the input, Nyarna needs a way to separate differently typed values.
-      For this, there's \Inline(\\match) and \Inline(\\matcher), where the former is a control structure while the latter defines a function.
-      They infer their return type by calculating the intersection of the type of each branch.
-      \Inline(\\matcher) also infers the type of its single parameter from the set of given types.
+      The call simply returns this content,
+      the paragraphs will be flattened.
+    \end(block)
+  \end(Code)
+\end(Split)
 
-      These structures are the core of backend processing:
-      You can walk over an input concatenation, and take action based on which type each item has.
-      Eventually you'll generate a \Inline(\\Text) value which can then be the output.
+\Split:
+  To process the input, Nyarna needs a way to separate differently typed values.
+  For this, there's \Inline(\\match) and \Inline(\\matcher), where the former is a control structure while the latter defines a function.
+  They infer their return type by calculating the intersection of the type of each branch.
+  \Inline(\\matcher) also infers the type of its single parameter from the set of given types.
 
-      By separating type-based dispatching from actual types, you are able to implement multiple independent backends to generate different output from your input.
+  These structures are the core of backend processing:
+  You can walk over an input concatenation, and take action based on which type each item has.
+  Eventually you'll generate a \Inline(\\Text) value which can then be the output.
 
-      This way of processing content has been primarily inspired by \Link(https://developer.mozilla.org/en-US/docs/Web/XSLT, XSLT).
-      However, unlike XSLT's path-based selection, Nyarna's type-based approach guarantees type safety.
+  By separating type-based dispatching from actual types, you are able to implement multiple independent backends to generate different output from your input.
 
-      A section on schemas is currently missing from this overview.
-      In the meantime, I recommand taking the \Link(/tour, instead to learn about those).
-    :right:
-      \Code(highlight=true):
-        \declare:
-          Bold = \Record:
-            content: \Concat(\Content) {primary}
-          \end(Record)
-          Italic = \Record:
-            content: \Concat(\Content) {primary}
-          \end(Record)
-          Content = \Intersection(\Bold, \Italic, \Text)
-          procContent = \matcher:
-          :(\Text):|\t|
-            \t
-          :(\Bold):|\b|
-            &lt;b&gt;\map(\b::content, \procContent)&lt;/b&gt;
-          :(\Italic):|\i|
-            &lt;i&gt;\map(\i::content, \procContent)&lt;/i&gt;
-          \end(matcher)
-        \end(declare)
+  This way of processing content has been primarily inspired by \Link(https://developer.mozilla.org/en-US/docs/Web/XSLT, XSLT).
+  However, unlike XSLT's path-based selection, Nyarna's type-based approach guarantees type safety.
+:right:
+  \Code(highlight=true):
+    \declare:
+      Bold = \Record:
+        content: \Concat(\Content) {primary}
+      \end(Record)
+      Italic = \Record:
+        content: \Concat(\Content) {primary}
+      \end(Record)
+      Content = \Intersection(\Bold, \Italic, \Text)
+      procContent = \matcher:
+      :(\Text):|\t|
+        \t
+      :(\Bold):|\b|
+        &lt;b&gt;\map(\b::content, \procContent)&lt;/b&gt;
+      :(\Italic):|\i|
+        &lt;i&gt;\map(\i::content, \procContent)&lt;/i&gt;
+      \end(matcher)
+    \end(declare)
 
-        \map(func=\procContent):
-          As we see \Italic(above), matchers
-          \Bold(can be \Italic(used)) recursively
-          to process typical structures.
-        \end(map)
-      \end(Code)
-    \end(Split)
-  \end(Page)
-\end(Paginated)
+    \map(func=\procContent):
+      As we see \Italic(above), matchers
+      \Bold(can be \Italic(used)) recursively
+      to process typical structures.
+    \end(map)
+  \end(Code)
+\end(Split)
 
-\Paginated(Tour, base=tour/):
+\Page(Schemas and Extensions, permalink=schemas/):2>
+
+\Split:
+  To define the structure the main input ought to have, Nyarna uses a schema.
+  Schemas define the root type of the documents they are used for, and additionally may define backends with which those documents can be processed.
+
+  To create a schema, you first create a \Inline(\\SchemaDef).
+  This can contain definitions of types, functions, and backends, but doesn't make the symbols visible.
+  A \Inline(\\SchemaDef) can be implicitly or explicitly instantiated, which will yield a \Inline(\\Schema).
+  The instantiation will establish all symbols defined in the schema.
+  A \Inline(\\SchemaDef) remembers its instance, and will always return that instance on subsequent instantiations.
+
+  You can define schemas in their own standalone modules, by using the predefined schema named \Emph(Schema).
+  This is best practice, as it allows the Nyarna processor to provide an internal backend in the predefined schema that simply validates your schema – semantic errors would otherwise only be visible when the first instantiation happens.
+  Other backends could be provided for the predefined schema, e.g. for autogenerating code that loads Nyarna input into native types.
+
+  If your schema defines backends, you declare a variable with which you can access the currently processed document.
+  A backend can define variables, functions, and a body which gets evaluated when the backend is used.
+  The body is to emit a concatenation of \Inline(\\Output), each of which creates a document.
+
+  Backends do not need to follow a certain style, but it is best practice to implement them via matchers.
+  This enables us later to extend the schema.
+:right:
+  \Code(highlight=true):
+    \standalone(schema=\import(Schema))
+
+    \SchemaDef(root=\Concat(\Animal)):
+      Cat = \Record:
+        name : \Text
+        lives: \Natural
+      \end(Record)
+
+      Dog = \Record:
+        name : \Text
+        breed: \Text
+      \end(Record)
+
+      Animal = \Intersection(\Cat, \Dog)
+    :backends:|\doc|
+      info = \backend:
+      :funcs:
+        writeInfo = \matcher:
+        :(\Cat):|\c|
+          The cat \c::name has \c::lives lives.\
+        :(\Dog):|\d|
+          The dog \d::name is of the breed \d::breed.\
+        \end(matcher)
+      :body:
+        \Output(name=info.txt):
+          \map(\doc::root, \writeInfo)
+        \end(Output)
+      \end(backend)
+    \end(SchemaDef)
+  \end(Code)
+\end(Split)
+
+\Split:
+  Extending a schema works by creating a \Inline(\\SchemaExt) and later using it as additional input when instantiating the \Inline(\\SchemaDef).
+  A \Inline(\\SchemaExt) can define additional types and backends, but can also extend certain entities.
+  Currently, this works for intersections, backends, and matchers.
+
+  By extending an intersection, an extension can allow additional content in the document.
+  By extending a matcher, an extension can make it process values of types that could perviously not be processed.
+  By extending a backend, an extension can extend the matchers defined within the backend, thus allowing an extended intersection to be properly processed by a backend.
+
+  A backend must be set up appropriately for it to be extended.
+  This is why it's best practice to implement backends with matchers.
+  If an extension extends an intersection, but does not extend a backend that processes values of this intersection, the backend is rendered unusable.
+
+  A \Inline(\\SchemaDef) remembers the extensions it has been instantiated with.
+  A subsequent instantiation allows fewer extensions to be given, but any extension given that has not been seen in the initial instantiation will result in an error.
+  Extensions are designed so that any document that is valid for a schema is also valid for any schema that is the base schema with some extensions.
+  With these rules, you can use a schema in a module, and import that module somewhere else where you use a richer version of the schema.
+
+  This concludes the overview.
+  You may take the \Link(/tour, tour) for a more detailled discussion of language features and to experiment with the language.
+:right:
+  \Code(highlight=true):
+    \fragment(\SchemaExt)
+
+    \SchemaExt:
+      Rat = \Record:
+        name  : \Text
+        sniffs: \Natural
+      \end(Record)
+
+      Animals |= \Intersection(\Rat)
+    :backends:|\doc|
+      info = \backend:
+      :funcs:
+        writeInfo |= \matcher:
+        :(\Rat):|\r|
+          The rat \r::name has sniffed \r::sniffs times.
+        \end(matcher)
+      \end(backend)
+    \end(SchemaExt)
+  \end(Code)
+\end(Split)
+
+\Paginated(Tour, base=tour/):1>
 
 \TourPage(Introduction, permalink=):
   This tour introduces you to Nyarna's language features.
@@ -1488,5 +1580,3 @@
     \end(Input)
   \end(Interactive)
 \end(TourPage)
-
-\end(Paginated)

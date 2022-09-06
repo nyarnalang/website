@@ -91,6 +91,7 @@
   Code = \Record:
     highlight = \Bool(false)
     content   : \Text {primary}:<off>
+    before    : \Optional(\Text)
   \end(Record)
 
   Interactive = \Record:

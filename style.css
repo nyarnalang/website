@@ -75,6 +75,11 @@ header h1 {
 main {
   flex: 1;
   padding: 0.5em 0.75em;
+  max-width: 140ch;
+}
+
+body.split .left {
+  max-width: 70ch;
 }
 
 h2 {
